@@ -82,6 +82,12 @@ final class SavingsProductsApiResourceSwagger {
         public Boolean withHoldTax;
         @Schema(example = "false")
         public Boolean isDormancyTrackingActive;
+        @Schema(example = "30")
+        public Integer daysToInactive;
+        @Schema(example = "60")
+        public Integer daysToDormancy;
+        @Schema(example = "90")
+        public Integer daysToEscheat;
     }
 
     @Schema(description = "PostSavingsProductsResponse")
