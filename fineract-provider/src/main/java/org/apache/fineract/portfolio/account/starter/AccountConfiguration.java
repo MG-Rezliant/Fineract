@@ -27,6 +27,7 @@ import org.apache.fineract.infrastructure.security.service.SqlValidator;
 import org.apache.fineract.infrastructure.security.utils.ColumnValidator;
 import org.apache.fineract.organisation.office.service.OfficeReadPlatformService;
 import org.apache.fineract.portfolio.account.data.AccountTransfersDataValidator;
+import org.apache.fineract.portfolio.account.data.StandingInstructionRequestDataValidator;
 import org.apache.fineract.portfolio.account.domain.AccountTransferAssembler;
 import org.apache.fineract.portfolio.account.domain.AccountTransferDetailAssembler;
 import org.apache.fineract.portfolio.account.domain.AccountTransferDetailRepository;
@@ -125,10 +126,12 @@ public class AccountConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(StandingInstructionWriteService.class)
-    public StandingInstructionWriteService standingInstructionWriteService(AccountTransferDetailAssembler accountTransferDetailAssembler,
+    public StandingInstructionWriteService standingInstructionWriteService(
+            StandingInstructionRequestDataValidator standingInstructionRequestDataValidator,
+            AccountTransferDetailAssembler accountTransferDetailAssembler,
             AccountTransferDetailRepository accountTransferDetailRepository, StandingInstructionRepository standingInstructionRepository,
             SavingsAccountAssembler savingsAccountAssembler, LoanAssembler loanAccountAssembler) {
-        return new StandingInstructionWriteServiceImpl(accountTransferDetailAssembler, accountTransferDetailRepository,
-                standingInstructionRepository, savingsAccountAssembler, loanAccountAssembler);
+        return new StandingInstructionWriteServiceImpl(standingInstructionRequestDataValidator, accountTransferDetailAssembler,
+                accountTransferDetailRepository, standingInstructionRepository, savingsAccountAssembler, loanAccountAssembler);
     }
 }
