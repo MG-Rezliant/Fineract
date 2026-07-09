@@ -16,35 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.account.data.request;
+package org.apache.fineract.portfolio.account.data.response;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import java.io.Serial;
 import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Data
 @NoArgsConstructor
-public class StandingInstructionUpdatesRequest implements Serializable {
+@AllArgsConstructor
+public class StandingInstructionCreateResponse implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Hidden
-    private Long id;
-    private String amount;
-    private String validTill;
-    private String dateFormat;
-    private String validFrom;
-    private String locale;
-    private String priority;
-    private String recurrenceType;
-    private String recurrenceInterval;
-    private String instructionType;
-    private String recurrenceFrequency;
-    private String recurrenceOnMonthDay;
-    private String name;
-    private String monthDayFormat;
-    private String status;
+    private Long clientId;
+    private Long resourceId;
 }
