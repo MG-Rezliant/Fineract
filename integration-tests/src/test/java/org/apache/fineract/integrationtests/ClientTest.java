@@ -35,11 +35,11 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.fineract.client.models.AddressCreateResponse;
 import org.apache.fineract.client.models.AddressData;
 import org.apache.fineract.client.models.ClientAddressRequest;
 import org.apache.fineract.client.models.GetClientsClientIdResponse;
 import org.apache.fineract.client.models.GlobalConfigurationPropertyData;
-import org.apache.fineract.client.models.PostClientClientIdAddressesResponse;
 import org.apache.fineract.client.models.PostClientsRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
@@ -254,8 +254,8 @@ public class ClientTest {
         // when
         ClientAddressRequest request = new ClientAddressRequest().postalCode(postalCode).city(city).countryId(Long.valueOf(countryId))
                 .stateProvinceId(Long.valueOf(stateId)).isActive(addressIsActive);
-        PostClientClientIdAddressesResponse response = ClientHelper.createClientAddress(requestSpec, responseSpec, clientId.longValue(),
-                addressTypeId, request);
+        AddressCreateResponse response = ClientHelper.createClientAddress(requestSpec, responseSpec, clientId.longValue(), addressTypeId,
+                request);
         // then
         assertThat(response.getResourceId()).isNotNull();
         List<AddressData> clientAddresses = ClientHelper.getClientAddresses(requestSpec, responseSpec, clientId);

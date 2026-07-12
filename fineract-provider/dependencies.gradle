@@ -45,6 +45,8 @@ dependencies {
     implementation(project(path: ':fineract-security'))
     implementation(project(path: ':fineract-working-capital-loan'))
     implementation(project(path: ':fineract-mix'))
+    implementation 'org.mapstruct:mapstruct'
+    annotationProcessor 'org.mapstruct:mapstruct-processor'
 
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 
