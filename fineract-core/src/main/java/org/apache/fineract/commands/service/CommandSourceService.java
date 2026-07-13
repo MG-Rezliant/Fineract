@@ -128,7 +128,8 @@ public class CommandSourceService {
         String permission = commandSource.getPermissionCode();
         boolean isMakerChecker = configurationDomainService.isMakerCheckerEnabledForTask(permission);
         if (isMakerChecker || result.isRollbackTransaction()) {
-            if (isApprovedByChecker || user.isCheckerSuperUser()) {
+            boolean userHasCheckerPermission = !user.hasNotPermissionForAnyOf("CHECKER_SUPER_USER", permission + "_CHECKER");
+            if (isApprovedByChecker || userHasCheckerPermission) {
                 commandSource.markAsChecked(user);
             } else {
                 if (commandSource.isSanitized()) {
