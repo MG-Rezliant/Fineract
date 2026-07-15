@@ -36,15 +36,8 @@ public interface CommandSourceRepository extends JpaRepository<CommandSource, Lo
             and upper(c.entity_name) = upper(?2)
             and (
                 c.resource_id = ?3
-                or c.subresource_id = ?3
-                or c.client_id = ?3
                 or c.loan_id = ?3
                 or c.savings_account_id = ?3
-                or c.group_id = ?3
-                or c.office_id = ?3
-                or c.product_id = ?3
-                or c.creditbureau_id = ?3
-                or c.organisation_creditbureau_id = ?3
             )
             and c.status = ?4
             order by c.made_on_date_utc desc

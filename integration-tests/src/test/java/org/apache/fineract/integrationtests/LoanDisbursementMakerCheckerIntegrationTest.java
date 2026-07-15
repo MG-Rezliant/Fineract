@@ -91,12 +91,11 @@ public class LoanDisbursementMakerCheckerIntegrationTest {
 
     @Test
     public void testLoanDisbursementMakerCheckerFlow() {
-        globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.MAKER_CHECKER,
-                new PutGlobalConfigurationsRequest().enabled(true));
-        globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_SAME_MAKER_CHECKER,
-                new PutGlobalConfigurationsRequest().enabled(false));
-
         try {
+            globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.MAKER_CHECKER,
+                    new PutGlobalConfigurationsRequest().enabled(true));
+            globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_SAME_MAKER_CHECKER,
+                    new PutGlobalConfigurationsRequest().enabled(false));
             // Enable maker-checker for loan disbursement
             rolesHelper.updatePermissions(new PutPermissionsRequest().putPermissionsItem(DISBURSE_LOAN_PERMISSION, true));
 
