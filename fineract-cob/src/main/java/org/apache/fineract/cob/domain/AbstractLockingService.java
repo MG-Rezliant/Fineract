@@ -50,6 +50,14 @@ public abstract class AbstractLockingService implements LockingService {
 
     protected abstract String getBatchLoanLockUpgrade();
 
+    /**
+     * Name of the account-id column in the lock table. Defaults to {@code loan_id} for backwards compatibility; account
+     * types whose lock table uses a different column (e.g. savings) override this.
+     */
+    protected String getIdColumnName() {
+        return "loan_id";
+    }
+
     @Override
     public void upgradeLock(List<Long> accountsToLock, LockOwner lockOwner) {
         jdbcTemplate.batchUpdate(getBatchLoanLockUpgrade(), accountsToLock, getInClauseParameterSizeLimit(), (ps, id) -> {
@@ -64,7 +72,8 @@ public abstract class AbstractLockingService implements LockingService {
         if (loanIds.isEmpty()) {
             return Collections.emptyList();
         }
-        String sql = "SELECT loan_id FROM " + getTableName() + " WHERE loan_id IN (:ids)";
+        String idColumn = getIdColumnName();
+        String sql = "SELECT " + idColumn + " FROM " + getTableName() + " WHERE " + idColumn + " IN (:ids)";
         return namedParameterJdbcTemplate.queryForList(sql, Map.of("ids", loanIds), Long.class);
     }
 
@@ -73,7 +82,8 @@ public abstract class AbstractLockingService implements LockingService {
         if (loanIds.isEmpty()) {
             return Collections.emptyList();
         }
-        String sql = "SELECT loan_id FROM " + getTableName() + " WHERE loan_id IN (:ids) AND lock_owner = :owner";
+        String idColumn = getIdColumnName();
+        String sql = "SELECT " + idColumn + " FROM " + getTableName() + " WHERE " + idColumn + " IN (:ids) AND lock_owner = :owner";
         return namedParameterJdbcTemplate.queryForList(sql, Map.of("ids", loanIds, "owner", lockOwner.name()), Long.class);
     }
 
@@ -94,13 +104,13 @@ public abstract class AbstractLockingService implements LockingService {
         if (loanIds.isEmpty()) {
             return;
         }
-        String sql = "DELETE FROM " + getTableName() + " WHERE loan_id IN (:ids) AND lock_owner = :owner";
+        String sql = "DELETE FROM " + getTableName() + " WHERE " + getIdColumnName() + " IN (:ids) AND lock_owner = :owner";
         namedParameterJdbcTemplate.update(sql, Map.of("ids", loanIds, "owner", lockOwner.name()));
     }
 
     @Override
     public void updateLockError(Long loanId, LockOwner lockOwner, String error, String stacktrace) {
-        String sql = "UPDATE " + getTableName() + " SET error = ?, stacktrace = ? WHERE loan_id = ? AND lock_owner = ?";
+        String sql = "UPDATE " + getTableName() + " SET error = ?, stacktrace = ? WHERE " + getIdColumnName() + " = ? AND lock_owner = ?";
         int updated = jdbcTemplate.update(sql, error, stacktrace, loanId, lockOwner.name());
         if (updated == 0) {
             log.warn("No lock found to update error for loan id: {} with owner: {}", loanId, lockOwner);
