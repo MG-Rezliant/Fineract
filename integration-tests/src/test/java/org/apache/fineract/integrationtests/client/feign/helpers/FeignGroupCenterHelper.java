@@ -94,7 +94,7 @@ public final class FeignGroupCenterHelper {
 
     public static void associateClientToGroup(long groupId, long clientId) {
         Map<String, List<String>> map = Map.of("clientMembers", List.of(String.valueOf(clientId)));
-        FeignRawHttpHelper.post("/groups/" + groupId + "?command=associateClients", GSON.toJson(map));
+        FeignRawHttpHelper.post("/groups/" + groupId + "/associateClients", GSON.toJson(map));
     }
 
     public static Long createCollateralProduct() {
