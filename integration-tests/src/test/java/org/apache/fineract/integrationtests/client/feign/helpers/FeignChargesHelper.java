@@ -122,6 +122,15 @@ public class FeignChargesHelper {
         return ok(() -> fineractClient.clientCharges().createClientCharge(clientId, request));
     }
 
+    /**
+     * Applies a client charge whose amount has decimal places, which the generated request model cannot carry - see
+     * {@link ClientChargeCommandsApi}.
+     */
+    public PostClientsClientIdChargesResponse addClientChargeWithDecimalAmount(Long clientId,
+            ClientChargeCommandsApi.DecimalAmountClientChargeRequest request) {
+        return ok(() -> fineractClient.create(ClientChargeCommandsApi.class).createClientChargeWithDecimalAmount(clientId, request));
+    }
+
     public PostClientsClientIdChargesChargeIdResponse payClientCharge(Long clientId, Long chargeId,
             PostClientsClientIdChargesChargeIdRequest request) {
         return ok(() -> fineractClient.clientCharges().payOrWaiveClientCharge(clientId, chargeId, request, PAY_COMMAND));
