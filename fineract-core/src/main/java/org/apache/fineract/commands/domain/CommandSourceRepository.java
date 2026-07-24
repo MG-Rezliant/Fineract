@@ -32,14 +32,14 @@ public interface CommandSourceRepository extends JpaRepository<CommandSource, Lo
 
     @Query(value = """
             select distinct c.* from m_portfolio_command_source c
-            where upper(c.action_name) = upper(?1)
-            and upper(c.entity_name) = upper(?2)
+            where upper(c.action_name) = upper(:actionName)
+            and upper(c.entity_name) = upper(:entityName)
             and (
-                c.resource_id = ?3
-                or c.loan_id = ?3
-                or c.savings_account_id = ?3
+                c.resource_id = :resourceId
+                or c.loan_id = :resourceId
+                or c.savings_account_id = :resourceId
             )
-            and c.status = ?4
+            and c.status = :status
             order by c.made_on_date_utc desc
             """, nativeQuery = true)
     List<CommandSource> findPendingByActionAndEntityAndResource(@Param("actionName") String actionName,
