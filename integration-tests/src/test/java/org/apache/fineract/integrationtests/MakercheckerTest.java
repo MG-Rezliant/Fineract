@@ -293,11 +293,9 @@ public class MakercheckerTest {
             UserHelper.createUser(this.requestSpec, this.responseSpec, roleId, staffId, maker2, "A1b2c3d4e5f$", "resourceId");
 
             RequestSpecification maker1RequestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build()
-                    .header("Authorization",
-                            "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker1, "A1b2c3d4e5f$"));
+                    .header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker1, "A1b2c3d4e5f$"));
             RequestSpecification maker2RequestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build()
-                    .header("Authorization",
-                            "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker2, "A1b2c3d4e5f$"));
+                    .header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker2, "A1b2c3d4e5f$"));
 
             ClientHelper.createClient(maker1RequestSpec, this.responseSpec);
             ClientHelper.createClient(maker2RequestSpec, this.responseSpec);
@@ -344,8 +342,7 @@ public class MakercheckerTest {
             final Integer makerUserId = (Integer) UserHelper.createUser(this.requestSpec, this.responseSpec, roleId, staffId, maker,
                     "A1b2c3d4e5f$", "resourceId");
             RequestSpecification makerRequestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build()
-                    .header("Authorization",
-                            "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker, "A1b2c3d4e5f$"));
+                    .header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker, "A1b2c3d4e5f$"));
 
             ClientHelper.createClient(makerRequestSpec, this.responseSpec);
 
