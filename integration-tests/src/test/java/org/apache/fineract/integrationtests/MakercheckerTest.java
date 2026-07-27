@@ -347,8 +347,8 @@ public class MakercheckerTest {
             ClientHelper.createClient(makerRequestSpec, this.responseSpec);
 
             // "dd MMMM yyyy" format without dateFormat/locale — previously caused 500 error
-            List<Map<String, Object>> fromOnly = makercheckersHelper.getMakerCheckerList(
-                    Map.of("makerId", makerUserId.toString(), "makerDateTimeFrom", "01 January 2020"));
+            List<Map<String, Object>> fromOnly = makercheckersHelper
+                    .getMakerCheckerList(Map.of("makerId", makerUserId.toString(), "makerDateTimeFrom", "01 January 2020"));
             assertEquals(1, fromOnly.size(), "'dd MMMM yyyy' from-date filter should include today's pending command");
 
             List<Map<String, Object>> fromAndTo = makercheckersHelper.getMakerCheckerList(Map.of("makerId", makerUserId.toString(),
