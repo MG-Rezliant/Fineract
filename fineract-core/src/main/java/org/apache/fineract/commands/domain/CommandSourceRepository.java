@@ -38,8 +38,8 @@ public interface CommandSourceRepository extends JpaRepository<CommandSource, Lo
             and c.status = :status
             order by c.madeOnDate desc
             """)
-    List<Long> findPendingIdsByActionAndEntityAndResource(@Param("actionName") String actionName,
-            @Param("entityName") String entityName, @Param("resourceId") Long resourceId, @Param("status") Integer status);
+    List<Long> findPendingIdsByActionAndEntityAndResource(@Param("actionName") String actionName, @Param("entityName") String entityName,
+            @Param("resourceId") Long resourceId, @Param("status") Integer status);
 
     @Modifying(flushAutomatically = true)
     @Query("delete from CommandSource c where c.status = :status and c.madeOnDate is not null and c.madeOnDate <= :dateForPurgeCriteria")
