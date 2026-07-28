@@ -30,19 +30,15 @@ public interface CommandSourceRepository extends JpaRepository<CommandSource, Lo
 
     CommandSource findByActionNameAndEntityNameAndIdempotencyKey(String actionName, String entityName, String idempotencyKey);
 
-    @Query(value = """
-            select distinct c.* from m_portfolio_command_source c
-            where upper(c.action_name) = upper(:actionName)
-            and upper(c.entity_name) = upper(:entityName)
-            and (
-                c.resource_id = :resourceId
-                or c.loan_id = :resourceId
-                or c.savings_account_id = :resourceId
-            )
+    @Query("""
+            select c.id from CommandSource c
+            where upper(c.actionName) = upper(:actionName)
+            and upper(c.entityName) = upper(:entityName)
+            and (c.resourceId = :resourceId or c.loanId = :resourceId or c.savingsId = :resourceId)
             and c.status = :status
-            order by c.made_on_date_utc desc
-            """, nativeQuery = true)
-    List<CommandSource> findPendingByActionAndEntityAndResource(@Param("actionName") String actionName,
+            order by c.madeOnDate desc
+            """)
+    List<Long> findPendingIdsByActionAndEntityAndResource(@Param("actionName") String actionName,
             @Param("entityName") String entityName, @Param("resourceId") Long resourceId, @Param("status") Integer status);
 
     @Modifying(flushAutomatically = true)

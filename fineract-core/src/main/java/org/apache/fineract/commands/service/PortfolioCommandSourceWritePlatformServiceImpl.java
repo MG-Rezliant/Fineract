@@ -76,12 +76,12 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
             if (!hasBasePermission && hasCheckerPermission) {
                 // Checker-only user: find and approve the pending entry for this action+entity+resource
                 final Long resourceId = resolveResourceId(wrapper);
-                final List<CommandSource> pendingCommands = findPendingCommandsByResource(wrapper, resourceId);
-                if (!pendingCommands.isEmpty()) {
-                    final CommandSource pendingCommand = pendingCommands.get(0);
+                final List<Long> pendingIds = findPendingCommandIdsByResource(wrapper, resourceId);
+                if (!pendingIds.isEmpty()) {
+                    final Long pendingCommandId = pendingIds.get(0);
                     log.debug("Checker-only user {} auto-approving pending command id={} for {}/{}", currentUser.getUsername(),
-                            pendingCommand.getId(), wrapper.entityName(), wrapper.actionName());
-                    return approveEntry(pendingCommand.getId());
+                            pendingCommandId, wrapper.entityName(), wrapper.actionName());
+                    return approveEntry(pendingCommandId);
                 } else {
                     throw new MakerCheckerCheckerOnlyInitiationException(taskPermission);
                 }
@@ -90,10 +90,10 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
 
                 if (!hasCheckerPermission && configurationService.isMakerCheckerEnabledForTask(taskPermission)) {
                     final Long resourceId = resolveResourceId(wrapper);
-                    final List<CommandSource> pendingCommands = findPendingCommandsByResource(wrapper, resourceId);
-                    if (!pendingCommands.isEmpty()) {
+                    final List<Long> pendingIds = findPendingCommandIdsByResource(wrapper, resourceId);
+                    if (!pendingIds.isEmpty()) {
                         log.warn("Maker {} attempted duplicate submission for {}/{} - pending id={}", currentUser.getUsername(),
-                                wrapper.entityName(), wrapper.actionName(), pendingCommands.get(0).getId());
+                                wrapper.entityName(), wrapper.actionName(), pendingIds.get(0));
                         throw new MakerCheckerDuplicatePendingSubmissionException(wrapper.actionName(), wrapper.entityName());
                     }
                 }
@@ -172,12 +172,12 @@ public class PortfolioCommandSourceWritePlatformServiceImpl implements Portfolio
         this.schedulerJobRunnerReadService.isUpdatesAllowed();
     }
 
-    private List<CommandSource> findPendingCommandsByResource(final CommandWrapper wrapper, final Long resourceId) {
+    private List<Long> findPendingCommandIdsByResource(final CommandWrapper wrapper, final Long resourceId) {
         if (resourceId == null) {
             return List.of();
         }
-        return this.commandSourceRepository.findPendingByActionAndEntityAndResource(wrapper.actionName(), wrapper.entityName(), resourceId,
-                CommandProcessingResultType.AWAITING_APPROVAL.getValue());
+        return this.commandSourceRepository.findPendingIdsByActionAndEntityAndResource(wrapper.actionName(), wrapper.entityName(),
+                resourceId, CommandProcessingResultType.AWAITING_APPROVAL.getValue());
     }
 
     private Long resolveResourceId(final CommandWrapper wrapper) {
