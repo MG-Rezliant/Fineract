@@ -196,6 +196,8 @@ public class MakercheckerTest {
             PutPermissionsRequest putPermissionsRequest = new PutPermissionsRequest().putPermissionsItem("WITHDRAWAL_SAVINGSACCOUNT",
                     false);
             rolesHelper.updatePermissions(putPermissionsRequest);
+            putPermissionsRequest = new PutPermissionsRequest().putPermissionsItem("ACTIVATE_CLIENT", false);
+            rolesHelper.updatePermissions(putPermissionsRequest);
         }
     }
 
