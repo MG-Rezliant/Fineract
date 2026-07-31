@@ -424,4 +424,30 @@ public class FineractEntityAccessReadServiceImpl implements FineractEntityAccess
         return visibleCount != null && visibleCount > 0;
     }
 
+    @Override
+    public String getSQLQueryInClauseIDList_ForChargesVisibleToOffice(final Long officeId) {
+        FineractEntityRelation fineractEntityRelation = fineractEntityRelationRepository
+                .findOneByCodeName(FineractEntityAccessType.OFFICE_ACCESS_TO_CHARGES.getStr());
+        final Long relId = fineractEntityRelation.getId();
+        return "WITH RECURSIVE descendants AS ( " +
+                "  SELECT id, parent_id FROM m_office WHERE id = " + officeId + " " +
+                "  UNION ALL " +
+                "  SELECT o.id, o.parent_id FROM m_office o JOIN descendants d ON o.parent_id = d.id " +
+                ") " +
+                "select c.id " +
+                "from m_charge c " +
+                "where c.id not in ( " +
+                "    select eem.to_id " +
+                "    from m_entity_to_entity_mapping eem " +
+                "    where eem.rel_id = " + relId + " " +
+                "    and eem.to_id <> 0 " +
+                ") " +
+                "or c.id in ( " +
+                "    select eem.to_id " +
+                "    from m_entity_to_entity_mapping eem " +
+                "    where eem.rel_id = " + relId + " " +
+                "    and (eem.from_id in (select id from descendants) or eem.to_id = 0) " +
+                ")";
+    }
+
 }

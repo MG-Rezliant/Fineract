@@ -36,6 +36,7 @@ public interface FineractEntityAccessReadService {
     String getSQLQueryInClauseIDList_ForSavingsProductsForOffice(Long savingsProductId, boolean includeAllOffices);
 
     String getSQLQueryInClauseIDList_ForChargesForOffice(Long officeId, boolean includeAllOffices);
+    String getSQLQueryInClauseIDList_ForChargesVisibleToOffice(Long officeId);
 
     Collection<FineractEntityRelationData> retrieveAllSupportedMappingTypes();
 

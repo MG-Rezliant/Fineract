@@ -134,6 +134,9 @@ public class FineractEntityAccessUtil {
             if (fineractEntityType.equals(FineractEntityType.LOAN_PRODUCT)) {
                 inClause = this.fineractEntityAccessReadService
                         .getSQLQueryInClauseIDList_ForLoanProductsVisibleToOffice(this.context.authenticatedUser().getOffice().getId());
+            } else if (fineractEntityType.equals(FineractEntityType.CHARGE)) {
+                inClause = this.fineractEntityAccessReadService
+                        .getSQLQueryInClauseIDList_ForChargesVisibleToOffice(this.context.authenticatedUser().getOffice().getId());
             }
         }
         return inClause;
@@ -149,6 +152,8 @@ public class FineractEntityAccessUtil {
         if (property.isEnabled()) {
             if (fineractEntityType.equals(FineractEntityType.LOAN_PRODUCT)) {
                 inClause = this.fineractEntityAccessReadService.getSQLQueryInClauseIDList_ForLoanProductsVisibleToOffice(officeId);
+            } else if (fineractEntityType.equals(FineractEntityType.CHARGE)) {
+                inClause = this.fineractEntityAccessReadService.getSQLQueryInClauseIDList_ForChargesVisibleToOffice(officeId);
             }
         }
         return inClause;
