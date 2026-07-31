@@ -43,4 +43,7 @@ public interface FineractEntityAccessReadService {
 
     Collection<FineractEntityToEntityMappingData> retrieveEntityToEntityMappings(Long mapId, Long fromoId, Long toId);
 
+    String getSQLQueryInClauseIDList_ForLoanProductsVisibleToOffice(Long officeId);
+
+    boolean isLoanProductVisibleToOffice(Long productId, Long officeId);
 }

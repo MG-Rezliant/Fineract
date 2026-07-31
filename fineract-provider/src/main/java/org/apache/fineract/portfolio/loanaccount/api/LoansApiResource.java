@@ -353,9 +353,6 @@ public class LoansApiResource {
 
         this.context.authenticatedUser().validateHasReadPermission(RESOURCE_NAME_FOR_PERMISSIONS);
 
-        // template
-        final Collection<LoanProductData> productOptions = this.loanProductReadPlatformService.retrieveAllLoanProductsForLookup(onlyActive);
-
         // options
         Collection<StaffData> allowedLoanOfficers;
         Collection<CodeValueData> loanCollateralOptions;
@@ -424,6 +421,10 @@ public class LoansApiResource {
                     throw new NotSupportedLoanTemplateTypeException(errorMsg, templateType);
                 }
             }
+
+            final Collection<LoanProductData> productOptions = officeId != null
+                    ? this.loanProductReadPlatformService.retrieveAllLoanProductsForLookupV2(onlyActive, officeId)
+                    : this.loanProductReadPlatformService.retrieveAllLoanProductsForLookupV2(onlyActive);
 
             allowedLoanOfficers = this.loanReadPlatformService.retrieveAllowedLoanOfficers(officeId, staffInSelectedOfficeOnly);
 

@@ -124,4 +124,34 @@ public class FineractEntityAccessUtil {
         return inClause;
     }
 
+    public String getSQLWhereClauseForVisibleProductIDsForUserOffice_ifGlobalConfigEnabled(final FineractEntityType fineractEntityType) {
+        String inClause = "";
+
+        final GlobalConfigurationProperty property = this.globalConfigurationRepository
+                .findOneByNameWithNotFoundDetection(GlobalConfigurationConstants.OFFICE_SPECIFIC_PRODUCTS_ENABLED);
+
+        if (property.isEnabled()) {
+            if (fineractEntityType.equals(FineractEntityType.LOAN_PRODUCT)) {
+                inClause = this.fineractEntityAccessReadService
+                        .getSQLQueryInClauseIDList_ForLoanProductsVisibleToOffice(this.context.authenticatedUser().getOffice().getId());
+            }
+        }
+        return inClause;
+    }
+
+    public String getSQLWhereClauseForVisibleProductIDsForOffice_ifGlobalConfigEnabled(final FineractEntityType fineractEntityType,
+            final Long officeId) {
+        String inClause = "";
+
+        final GlobalConfigurationProperty property = this.globalConfigurationRepository
+                .findOneByNameWithNotFoundDetection(GlobalConfigurationConstants.OFFICE_SPECIFIC_PRODUCTS_ENABLED);
+
+        if (property.isEnabled()) {
+            if (fineractEntityType.equals(FineractEntityType.LOAN_PRODUCT)) {
+                inClause = this.fineractEntityAccessReadService.getSQLQueryInClauseIDList_ForLoanProductsVisibleToOffice(officeId);
+            }
+        }
+        return inClause;
+    }
+
 }
