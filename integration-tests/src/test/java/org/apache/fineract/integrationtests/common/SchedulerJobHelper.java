@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.fineract.client.models.GetJobsResponse;
+import org.apache.fineract.client.models.JobExecuteRequest;
 import org.apache.fineract.client.models.PutJobsJobIDRequest;
 import org.apache.fineract.client.util.Calls;
 import org.hamcrest.MatcherAssert;
@@ -138,7 +139,7 @@ public class SchedulerJobHelper {
     }
 
     public void runSchedulerJob(int jobId) {
-        Calls.ok(FineractClientHelper.getFineractClient().jobs.executeJob((long) jobId, "executeJob"));
+        Calls.ok(FineractClientHelper.getFineractClient().jobs.executeJob((long) jobId, "executeJob", new JobExecuteRequest()));
     }
 
     // TODO: Rewrite to use fineract-client instead!
