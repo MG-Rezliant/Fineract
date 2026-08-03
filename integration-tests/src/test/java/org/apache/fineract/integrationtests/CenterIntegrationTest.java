@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
+import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.CenterDomain;
 import org.apache.fineract.integrationtests.common.CenterHelper;
+import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
 import org.apache.fineract.integrationtests.common.GroupHelper;
 import org.apache.fineract.integrationtests.common.OfficeHelper;
 import org.apache.fineract.integrationtests.common.Utils;
@@ -101,6 +103,25 @@ public class CenterIntegrationTest {
         Assertions.assertTrue(center.getStaffId() == staffId);
         Assertions.assertTrue(center.isActive() == false);
         Assertions.assertArrayEquals(center.getGroupMembers(), groupMembers);
+    }
+
+    @Test
+    public void testCenterCreationWithoutExternalIdGeneratesOne() {
+        final GlobalConfigurationHelper globalConfigurationHelper = new GlobalConfigurationHelper();
+        globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, true);
+        try {
+            int officeId = new OfficeHelper().createOffice(LocalDate.of(2007, 7, 1)).getResourceId().intValue();
+            String name = "TestNoExternalId" + new Timestamp(new java.util.Date().getTime());
+            int resourceId = CenterHelper.createCenter(name, officeId, requestSpec, responseSpec);
+            CenterDomain center = CenterHelper.retrieveByID(resourceId, requestSpec, responseSpec);
+
+            Assertions.assertNotNull(center);
+            Assertions.assertNotNull(center.getExternalId());
+            Assertions.assertFalse(center.getExternalId().isBlank());
+            Assertions.assertNotEquals("null", center.getExternalId());
+        } finally {
+            globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, false);
+        }
     }
 
     @Test
