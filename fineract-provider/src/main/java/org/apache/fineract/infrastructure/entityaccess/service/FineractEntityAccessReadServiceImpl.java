@@ -213,8 +213,7 @@ public class FineractEntityAccessReadServiceImpl implements FineractEntityAccess
 
                 EntityToEntityMapper entityToEntityMapper = new EntityToEntityMapper();
                 String officeScopedSql = entityToEntityMapper.schemaWithOfficeScopedFromId();
-                return this.jdbcTemplate.query(officeScopedSql, entityToEntityMapper,
-                        new Object[] { userOfficeId, mapId, toId, toId });
+                return this.jdbcTemplate.query(officeScopedSql, entityToEntityMapper, new Object[] { userOfficeId, mapId, toId, toId });
             }
         }
 
@@ -317,43 +316,43 @@ public class FineractEntityAccessReadServiceImpl implements FineractEntityAccess
         }
 
         public String schemaWithOfficeScopedFromId() {
-            return """
-                    WITH RECURSIVE office_descendants AS (
-                        SELECT id FROM m_office WHERE id = ?
-                        UNION ALL
-                        SELECT o.id FROM m_office o JOIN office_descendants d ON o.parent_id = d.id
-                    )
-                    select eem.id as mapId,
-                    eem.rel_id as relId,
-                    eem.from_id as from_id,
-                    eem.to_id as to_id,
-                    eem.start_date as startDate,
-                    eem.end_date as endDate,
-                    case er.code_name
-                    when 'office_access_to_loan_products' then o.name
-                    when 'office_access_to_savings_products' then o.name
-                    when 'office_access_to_fees/charges' then o.name
-                    when 'role_access_to_loan_products' then r.name
-                    when 'role_access_to_savings_products' then r.name
-                    end as from_name,
-                    case er.code_name
-                    when 'office_access_to_loan_products' then lp.name
-                    when 'office_access_to_savings_products' then sp.name
-                    when 'office_access_to_fees/charges' then charge.name
-                    when 'role_access_to_loan_products' then lp.name
-                    when 'role_access_to_savings_products' then sp.name
-                    end as to_name,
-                    er.code_name
-                    from m_entity_to_entity_mapping eem
-                    join m_entity_relation er on eem.rel_id = er.id
-                    left join m_office o on er.from_entity_type = 1 and eem.from_id = o.id
-                    left join m_role r on er.from_entity_type = 5 and eem.from_id = r.id
-                    left join m_product_loan lp on er.to_entity_type = 2 and eem.to_id = lp.id
-                    left join m_savings_product sp on er.to_entity_type = 3 and eem.to_id = sp.id
-                    left join m_charge charge on er.to_entity_type = 4 and eem.to_id = charge.id
-                    where er.id = ?
-                    and eem.from_id IN (SELECT id FROM office_descendants)
-                    and ( ? = 0 or to_id = ? )\s""";
+            StringBuilder str = new StringBuilder("WITH RECURSIVE office_descendants AS ( ");
+            str.append("SELECT id FROM m_office WHERE id = ? ");
+            str.append("UNION ALL ");
+            str.append("SELECT o.id FROM m_office o JOIN office_descendants d ON o.parent_id = d.id ");
+            str.append(") ");
+            str.append("select eem.id as mapId, ");
+            str.append("eem.rel_id as relId, ");
+            str.append("eem.from_id as from_id, ");
+            str.append("eem.to_id as to_id, ");
+            str.append("eem.start_date as startDate, ");
+            str.append("eem.end_date as endDate, ");
+            str.append("case er.code_name ");
+            str.append("when 'office_access_to_loan_products' then o.name ");
+            str.append("when 'office_access_to_savings_products' then o.name ");
+            str.append("when 'office_access_to_fees/charges' then o.name ");
+            str.append("when 'role_access_to_loan_products' then r.name ");
+            str.append("when 'role_access_to_savings_products' then r.name ");
+            str.append("end as from_name, ");
+            str.append("case er.code_name ");
+            str.append("when 'office_access_to_loan_products' then lp.name ");
+            str.append("when 'office_access_to_savings_products' then sp.name ");
+            str.append("when 'office_access_to_fees/charges' then charge.name ");
+            str.append("when 'role_access_to_loan_products' then lp.name ");
+            str.append("when 'role_access_to_savings_products' then sp.name ");
+            str.append("end as to_name, ");
+            str.append("er.code_name ");
+            str.append("from m_entity_to_entity_mapping eem ");
+            str.append("join m_entity_relation er on eem.rel_id = er.id ");
+            str.append("left join m_office o on er.from_entity_type = 1 and eem.from_id = o.id ");
+            str.append("left join m_role r on er.from_entity_type = 5 and eem.from_id = r.id ");
+            str.append("left join m_product_loan lp on er.to_entity_type = 2 and eem.to_id = lp.id ");
+            str.append("left join m_savings_product sp on er.to_entity_type = 3 and eem.to_id = sp.id ");
+            str.append("left join m_charge charge on er.to_entity_type = 4 and eem.to_id = charge.id ");
+            str.append("where er.id = ? ");
+            str.append("and eem.from_id IN (SELECT id FROM office_descendants) ");
+            str.append("and ( ? = 0 or to_id = ? ) ");
+            return str.toString();
         }
 
         @Override
