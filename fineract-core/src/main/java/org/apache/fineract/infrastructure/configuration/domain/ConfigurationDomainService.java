@@ -179,4 +179,6 @@ public interface ConfigurationDomainService {
     boolean isAllowCashAndNonCashAccrual();
 
     boolean isBlockTransactionsOnClosedOverpaidLoansEnabled();
+
+    boolean isIdempotencyValidationEnabled();
 }

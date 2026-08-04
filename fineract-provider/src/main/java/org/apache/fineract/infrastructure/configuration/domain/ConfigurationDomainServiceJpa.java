@@ -600,6 +600,11 @@ public class ConfigurationDomainServiceJpa implements ConfigurationDomainService
     }
 
     @Override
+    public boolean isIdempotencyValidationEnabled() {
+        return getGlobalConfigurationPropertyData(GlobalConfigurationConstants.ENABLE_IDEMPOTENCY_VALIDATION).isEnabled();
+    }
+
+    @Override
     public String getIncomeExpenseGlAccounts() {
         final GlobalConfigurationPropertyData property = getGlobalConfigurationPropertyData(
                 GlobalConfigurationConstants.INCOME_EXPENSE_GL_ACCOUNTS);

@@ -472,7 +472,8 @@ public class SecurityConfig {
     }
 
     public IdempotencyStoreFilter idempotencyStoreFilter() {
-        return new IdempotencyStoreFilter(fineractRequestContextHolder, idempotencyStoreHelper, fineractProperties);
+        return new IdempotencyStoreFilter(fineractRequestContextHolder, idempotencyStoreHelper, fineractProperties,
+                configurationDomainService);
     }
 
     public CorrelationHeaderFilter correlationHeaderFilter() {

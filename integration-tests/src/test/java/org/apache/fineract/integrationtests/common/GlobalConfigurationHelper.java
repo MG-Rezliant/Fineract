@@ -694,6 +694,12 @@ public class GlobalConfigurationHelper {
         retainedEarningUsedByReportName.put("string_value", "Trial Balance Summary Report with Asset Owner");
         defaults.add(retainedEarningUsedByReportName);
 
+        HashMap<String, Object> enableIdempotencyValidationDefault = new HashMap<>();
+        enableIdempotencyValidationDefault.put("name", GlobalConfigurationConstants.ENABLE_IDEMPOTENCY_VALIDATION);
+        enableIdempotencyValidationDefault.put("value", 0L);
+        enableIdempotencyValidationDefault.put("enabled", false);
+        enableIdempotencyValidationDefault.put("trapDoor", false);
+        defaults.add(enableIdempotencyValidationDefault);
         return defaults;
     }
 
