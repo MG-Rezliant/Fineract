@@ -33,11 +33,11 @@ import org.apache.fineract.cob.data.COBPartition;
 import org.apache.fineract.cob.resolver.BusinessDateResolver;
 import org.apache.fineract.cob.resolver.CatchUpFlagResolver;
 import org.apache.fineract.cob.service.RetrieveIdService;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.util.StopWatch;
 
 @Slf4j
@@ -89,11 +89,11 @@ public abstract class CommonPartitioner {
     }
 
     private void stopJobExecution() {
-        Long jobId = stepExecution.getJobExecution().getId();
+        JobExecution jobExecution = stepExecution.getJobExecution();
         try {
-            jobOperator.stop(jobId);
-        } catch (NoSuchJobExecutionException | JobExecutionNotRunningException e) {
-            log.error("There is no running execution for the given execution ID. Execution ID: {}", jobId);
+            jobOperator.stop(jobExecution);
+        } catch (JobExecutionNotRunningException e) {
+            log.error("There is no running execution for the given execution ID. Execution ID: {}", jobExecution.getId());
             throw new RuntimeException(e);
         }
 

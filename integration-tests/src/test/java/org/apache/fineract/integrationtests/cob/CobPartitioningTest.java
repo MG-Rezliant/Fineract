@@ -20,6 +20,7 @@ package org.apache.fineract.integrationtests.cob;
 
 import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 
+import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
@@ -84,6 +85,8 @@ public class CobPartitioningTest extends BaseLoanIntegrationTest {
     @BeforeAll
     public static void setupInvestorBusinessStep() {
         Utils.initializeRESTAssured();
+        // dump the request/response when an expectation fails, so CI reveals the error body
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();

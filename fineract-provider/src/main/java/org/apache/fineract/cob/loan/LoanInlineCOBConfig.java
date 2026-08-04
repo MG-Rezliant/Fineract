@@ -30,13 +30,14 @@ import org.apache.fineract.infrastructure.springbatch.PropertyService;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepository;
 import org.apache.fineract.portfolio.loanaccount.service.ProgressiveLoanModelProcessingService;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.listener.ExecutionContextPromotionListener;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.step.builder.ChunkOrientedStepBuilder;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.integration.config.annotation.EnableBatchIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,10 +90,15 @@ public class LoanInlineCOBConfig {
 
     @Bean
     public Step inlineLoanCOBStep() {
-        return new StepBuilder("Inline Loan COB Step", jobRepository)
-                .<Loan, Loan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name()), transactionManager)
+        ChunkOrientedStepBuilder<Loan, Loan> stepBuilder = new StepBuilder("Inline Loan COB Step", jobRepository)
+                .<Loan, Loan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name())).transactionManager(transactionManager)
                 .reader(inlineCobWorkerItemReader()).processor(inlineCobWorkerItemProcessor()).writer(inlineCobWorkerItemWriter())
-                .listener(inlineCobLoanItemListener()).build();
+                .listener(inlineCobLoanItemListener());
+        // Batch 6's chunk-oriented step no longer scans item components for step-listener
+        // annotations, so register the reader and processor as StepExecutionListeners explicitly
+        stepBuilder.listener(inlineCobWorkerItemReader());
+        stepBuilder.listener(inlineCobWorkerItemProcessor());
+        return stepBuilder.build();
     }
 
     @Bean(name = "loanInlineCOBJob")
@@ -122,9 +128,7 @@ public class LoanInlineCOBConfig {
 
     @Bean
     public InlineCOBLoanItemWriter inlineCobWorkerItemWriter() {
-        InlineCOBLoanItemWriter repositoryItemWriter = new InlineCOBLoanItemWriter(loanLockingService);
-        repositoryItemWriter.setRepository(loanRepository);
-        return repositoryItemWriter;
+        return new InlineCOBLoanItemWriter(loanLockingService, loanRepository);
     }
 
     @Bean

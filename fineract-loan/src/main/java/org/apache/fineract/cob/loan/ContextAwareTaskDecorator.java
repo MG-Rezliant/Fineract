@@ -21,8 +21,10 @@ package org.apache.fineract.cob.loan;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.domain.FineractContext;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
+import org.jspecify.annotations.NonNull;
+import org.springframework.batch.core.scope.context.StepContext;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
 import org.springframework.core.task.TaskDecorator;
-import org.springframework.lang.NonNull;
 
 /**
  * Task decorator to ensure proper thread context propagation and cleanup
@@ -34,12 +36,22 @@ public class ContextAwareTaskDecorator implements TaskDecorator {
     @Override
     public Runnable decorate(@NonNull final Runnable runnable) {
         final FineractContext context = ThreadLocalContextUtil.getContext();
+        // Batch 6's chunk-oriented step processes items concurrently on pool threads without
+        // registering the step context there, which breaks step-scoped bean resolution; capture the
+        // context at submission (on the step thread) and register it on the executing thread
+        final StepContext stepContext = StepSynchronizationManager.getContext();
         return () -> {
             try {
                 log.debug("Initializing thread context for decorated task");
                 ThreadLocalContextUtil.init(context);
+                if (stepContext != null) {
+                    StepSynchronizationManager.register(stepContext.getStepExecution());
+                }
                 runnable.run();
             } finally {
+                if (stepContext != null) {
+                    StepSynchronizationManager.close();
+                }
                 ThreadLocalContextUtil.reset();
             }
         };

@@ -18,10 +18,14 @@
  */
 package org.apache.fineract.infrastructure.core.config;
 
+import org.apache.fineract.infrastructure.core.service.database.DatabaseTypeResolver;
 import org.apache.fineract.infrastructure.core.service.database.RoutingDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.jdbc.core.dialect.JdbcDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcMySqlDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -32,6 +36,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
         "org.apache.fineract.infrastructure.documentmanagement.domain",
         "org.apache.fineract.mix.domain" }, jdbcOperationsRef = "namedParameterJdbcTemplate", transactionManagerRef = "jdbcTransactionManager")
 public class JdbcConfig {
+
+    @Bean
+    public JdbcDialect jdbcDialect(DatabaseTypeResolver databaseTypeResolver) {
+        // Spring Data JDBC 4 resolves the dialect eagerly by probing the DataSource, which does not
+        // work with the per-tenant RoutingDataSource; MariaDB is handled as MySQL throughout Fineract
+        return databaseTypeResolver.isPostgreSQL() ? JdbcPostgresDialect.INSTANCE : JdbcMySqlDialect.INSTANCE;
+    }
 
     @Bean
     public JdbcTemplate jdbcTemplate(RoutingDataSource dataSource) {

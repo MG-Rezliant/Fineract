@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.jobs.data.partitionedjobs.PartitionedJob;
 import org.apache.fineract.infrastructure.jobs.domain.JobExecutionRepository;
 import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,6 +38,7 @@ public class StuckJobExecutorServiceImpl implements StuckJobExecutorService {
     @Qualifier("requiresNewTransactionJdbcTemplate")
     private final TransactionTemplate requiresNewTransactionJdbcTemplate;
     private final JobOperator jobOperator;
+    private final JobRepository jobRepository;
 
     @Override
     public void resumeStuckJob(String jobName) {
@@ -54,7 +56,7 @@ public class StuckJobExecutorServiceImpl implements StuckJobExecutorService {
 
     private void handleStuckTaskletJob(Long stuckJobId) {
         try {
-            jobOperator.restart(stuckJobId);
+            jobOperator.restart(jobRepository.getJobExecution(stuckJobId));
         } catch (Exception e) {
             throw new RuntimeException("Exception while handling a stuck job", e);
         }
@@ -85,7 +87,7 @@ public class StuckJobExecutorServiceImpl implements StuckJobExecutorService {
         try {
             waitUntilAllPartitionsFinished(stuckJobId, partitionerStepName);
             updateJobStatusToFailedInNewTransaction(stuckJobId, partitionerStepName);
-            jobOperator.restart(stuckJobId);
+            jobOperator.restart(jobRepository.getJobExecution(stuckJobId));
         } catch (Exception e) {
             throw new RuntimeException("Exception while handling a stuck job", e);
         }
