@@ -30,15 +30,17 @@ import org.apache.fineract.cob.COBBusinessStepService;
 import org.apache.fineract.cob.data.BusinessStepNameAndOrder;
 import org.apache.fineract.cob.resolver.BusinessDateResolver;
 import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
+import org.jspecify.annotations.NonNull;
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterStep;
-import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.lang.NonNull;
+import org.springframework.batch.core.listener.StepExecutionListener;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 
 @RequiredArgsConstructor
-public abstract class AbstractItemProcessor<I extends AbstractPersistableCustom<Long>> implements ItemProcessor<I, I> {
+public abstract class AbstractItemProcessor<I extends AbstractPersistableCustom<Long>>
+        implements ItemProcessor<I, I>, StepExecutionListener {
 
     private final COBBusinessStepService cobBusinessStepService;
 
@@ -66,6 +68,7 @@ public abstract class AbstractItemProcessor<I extends AbstractPersistableCustom<
         businessDate = BusinessDateResolver.resolve(stepExecution);
     }
 
+    @Override
     @AfterStep
     public ExitStatus afterStep(@NonNull StepExecution stepExecution) {
         return ExitStatus.COMPLETED;

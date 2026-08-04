@@ -35,14 +35,15 @@ import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.apache.fineract.infrastructure.springbatch.PropertyService;
 import org.apache.fineract.portfolio.workingcapitalloan.domain.WorkingCapitalLoan;
 import org.apache.fineract.portfolio.workingcapitalloan.repository.WorkingCapitalLoanRepository;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.SimpleStepBuilder;
+import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.step.builder.ChunkOrientedStepBuilder;
 import org.springframework.batch.integration.partition.RemotePartitioningWorkerStepBuilderFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.MessageChannel;
@@ -76,12 +77,14 @@ public class WorkingCapitalLoanCOBWorkerConfiguration {
 
     @Bean(WORKING_CAPITAL_LOAN_COB_WORKER_STEP)
     public Step workingCapitalLoanCOBWorkerStep(final COBBusinessStepService cobBusinessStepService) {
-        final SimpleStepBuilder<WorkingCapitalLoan, WorkingCapitalLoan> stepBuilder = stepBuilderFactory
+        WorkingCapitalLoanCOBWorkerItemReader reader = new WorkingCapitalLoanCOBWorkerItemReader(workingCapitalLoanRepository,
+                new BeforeStepLockingItemReaderHelper(retrieveIdService, wpcLoanLockingService));
+        WorkingCapitalLoanCOBWorkerItemProcessor processor = new WorkingCapitalLoanCOBWorkerItemProcessor(cobBusinessStepService);
+        final ChunkOrientedStepBuilder<WorkingCapitalLoan, WorkingCapitalLoan> stepBuilder = stepBuilderFactory
                 .get(WORKING_CAPITAL_LOAN_COB_WORKER_STEP).inputChannel(inboundRequests)
-                .<WorkingCapitalLoan, WorkingCapitalLoan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name()), transactionManager) //
-                .reader(new WorkingCapitalLoanCOBWorkerItemReader(workingCapitalLoanRepository,
-                        new BeforeStepLockingItemReaderHelper(retrieveIdService, wpcLoanLockingService))) //
-                .processor(new WorkingCapitalLoanCOBWorkerItemProcessor(cobBusinessStepService)) //
+                .<WorkingCapitalLoan, WorkingCapitalLoan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name())) //
+                .reader(reader) //
+                .processor(processor) //
                 .writer(new WorkingCapitalLoanCOBWorkerItemWriter(wpcLoanLockingService, workingCapitalLoanRepository)) //
                 .faultTolerant() //
                 .retry(Exception.class) //
@@ -92,8 +95,13 @@ public class WorkingCapitalLoanCOBWorkerConfiguration {
                 .listener(workingCapitalCobWorkerStepListener()) //
                 .transactionManager(transactionManager);
 
+        // Batch 6's chunk-oriented step no longer scans item components for step-listener
+        // annotations, so register the reader and processor as StepExecutionListeners explicitly
+        stepBuilder.listener(reader);
+        stepBuilder.listener(processor);
+
         if (propertyService.getThreadPoolMaxPoolSize(WORKING_CAPITAL_JOB_NAME) > 1) {
-            stepBuilder.taskExecutor(workingCapitalCobTaskExecutor());
+            stepBuilder.taskExecutor((AsyncTaskExecutor) workingCapitalCobTaskExecutor());
         }
 
         return stepBuilder.build();
@@ -114,7 +122,8 @@ public class WorkingCapitalLoanCOBWorkerConfiguration {
         taskExecutor.setThreadGroupName("COB-Thread");
         taskExecutor.setCorePoolSize(propertyService.getThreadPoolCorePoolSize(WORKING_CAPITAL_JOB_NAME));
         taskExecutor.setMaxPoolSize(propertyService.getThreadPoolMaxPoolSize(WORKING_CAPITAL_JOB_NAME));
-        taskExecutor.setQueueCapacity(propertyService.getThreadPoolQueueCapacity(WORKING_CAPITAL_JOB_NAME));
+        taskExecutor.setQueueCapacity(Math.max(propertyService.getThreadPoolQueueCapacity(WORKING_CAPITAL_JOB_NAME),
+                propertyService.getChunkSize(JobName.LOAN_COB.name())));
         taskExecutor.setAllowCoreThreadTimeOut(true);
         taskExecutor.setTaskDecorator(new ContextAwareTaskDecorator());
         return taskExecutor;

@@ -20,6 +20,8 @@ package org.apache.fineract.infrastructure.core.jersey;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
@@ -33,13 +35,13 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonInputMessage;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Component;
 
 @Provider
@@ -49,7 +51,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JerseyJacksonObjectArgumentHandler<T> implements MessageBodyReader<T>, MessageBodyWriter<T> {
 
-    private final MappingJackson2HttpMessageConverter converter;
+    // The Jersey REST layer stays on Jackson 2; Boot 4 no longer auto-configures the Jackson 2
+    // HTTP message converter bean, so bind directly to the Jersey object mapper instead
+    @Qualifier("objectMapper")
+    private final ObjectMapper objectMapper;
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, jakarta.ws.rs.core.MediaType mediaType) {
@@ -68,9 +73,27 @@ public class JerseyJacksonObjectArgumentHandler<T> implements MessageBodyReader<
             return type.cast(json);
         } else {
             // Create the proper type from the JSON
-            HttpHeaders headers = new HttpHeaders();
-            headers.putAll(httpHeaders);
-            return (T) converter.read(genericType, type, new MappingJacksonInputMessage(entityStream, headers));
+            try {
+                return (T) objectMapper.readValue(entityStream, objectMapper.getTypeFactory().constructType(genericType));
+            } catch (JsonProcessingException e) {
+                // preserve the contract of the removed MappingJackson2HttpMessageConverter: malformed or unbindable
+                // JSON must surface as HttpMessageNotReadableException so HttpMessageNotReadableErrorController
+                // renders the platform JSON validation error instead of a raw Jackson message
+                HttpHeaders headers = new HttpHeaders();
+                headers.putAll(httpHeaders);
+                throw new HttpMessageNotReadableException("JSON parse error: " + e.getOriginalMessage(), e, new HttpInputMessage() {
+
+                    @Override
+                    public InputStream getBody() {
+                        return entityStream;
+                    }
+
+                    @Override
+                    public HttpHeaders getHeaders() {
+                        return headers;
+                    }
+                });
+            }
         }
     }
 
@@ -87,12 +110,7 @@ public class JerseyJacksonObjectArgumentHandler<T> implements MessageBodyReader<
             IOUtils.write((String) t, entityStream, UTF_8);
         } else {
             // Create the proper JSON string from the object
-            HttpHeaders headers = new HttpHeaders();
-            httpHeaders.forEach((header, rawValues) -> {
-                List<String> values = rawValues.stream().map(Object::toString).toList();
-                headers.put(header, values);
-            });
-            converter.write(t, genericType, MediaType.APPLICATION_JSON, new SimpleHttpOutputMessage(entityStream, headers));
+            objectMapper.writeValue(entityStream, t);
         }
     }
 }

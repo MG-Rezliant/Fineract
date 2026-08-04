@@ -262,4 +262,5 @@
     <include file="parts/0242_fix_group_summary_report_parameters.xml" relativeToChangelogFile="true"/>
     <include file="parts/0242_update_m_tellers_unique_key.xml" relativeToChangelogFile="true" />
     <include file="parts/0243_add_client_lifecycle_event_configuration.xml" relativeToChangelogFile="true" />
+    <include file="parts/0243_spring_batch_6_upgrade.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

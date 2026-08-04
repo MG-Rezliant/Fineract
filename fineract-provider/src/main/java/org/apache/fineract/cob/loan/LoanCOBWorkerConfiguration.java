@@ -34,16 +34,17 @@ import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepository;
 import org.apache.fineract.portfolio.loanaccount.service.ProgressiveLoanModelProcessingService;
 import org.apache.fineract.useradministration.domain.AppUserRepositoryWrapper;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.SimpleStepBuilder;
+import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.step.builder.ChunkOrientedStepBuilder;
 import org.springframework.batch.integration.partition.RemotePartitioningWorkerStepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.integration.channel.QueueChannel;
@@ -92,8 +93,9 @@ public class LoanCOBWorkerConfiguration {
 
     @Bean(name = LoanCOBConstant.LOAN_COB_WORKER_STEP)
     public Step loanCOBWorkerStep() {
-        final SimpleStepBuilder<Loan, Loan> stepBuilder = stepBuilderFactory.get("Loan COB worker - Step").inputChannel(inboundRequests)
-                .<Loan, Loan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name()), transactionManager) //
+        final ChunkOrientedStepBuilder<Loan, Loan> stepBuilder = stepBuilderFactory.get("Loan COB worker - Step")
+                .inputChannel(inboundRequests) //
+                .<Loan, Loan>chunk(propertyService.getChunkSize(JobName.LOAN_COB.name())) //
                 .reader(cobWorkerItemReader()) //
                 .processor(cobWorkerItemProcessor()) //
                 .writer(cobWorkerItemWriter()) //
@@ -106,8 +108,13 @@ public class LoanCOBWorkerConfiguration {
                 .listener(cobWorkerStepListener()) //
                 .transactionManager(transactionManager);
 
-        if (propertyService.getThreadPoolMaxPoolSize(LoanCOBConstant.JOB_NAME) > 1) {
-            stepBuilder.taskExecutor(cobTaskExecutor());
+        // Batch 6's chunk-oriented step no longer scans item components for step-listener
+        // annotations, so register the reader and processor as StepExecutionListeners explicitly
+        stepBuilder.listener(cobWorkerItemReader());
+        stepBuilder.listener(cobWorkerItemProcessor());
+
+        if (cobTaskExecutor() instanceof AsyncTaskExecutor asyncTaskExecutor) {
+            stepBuilder.taskExecutor(asyncTaskExecutor);
         }
 
         return stepBuilder.build();
@@ -123,7 +130,8 @@ public class LoanCOBWorkerConfiguration {
         taskExecutor.setThreadGroupName("COB-Thread");
         taskExecutor.setCorePoolSize(propertyService.getThreadPoolCorePoolSize(JobName.LOAN_COB.name()));
         taskExecutor.setMaxPoolSize(propertyService.getThreadPoolMaxPoolSize(JobName.LOAN_COB.name()));
-        taskExecutor.setQueueCapacity(propertyService.getThreadPoolQueueCapacity(JobName.LOAN_COB.name()));
+        taskExecutor.setQueueCapacity(Math.max(propertyService.getThreadPoolQueueCapacity(JobName.LOAN_COB.name()),
+                propertyService.getChunkSize(JobName.LOAN_COB.name())));
         taskExecutor.setAllowCoreThreadTimeOut(true);
         taskExecutor.setTaskDecorator(new ContextAwareTaskDecorator());
         return taskExecutor;
@@ -169,8 +177,6 @@ public class LoanCOBWorkerConfiguration {
     @Bean
     @StepScope
     public LoanItemWriter cobWorkerItemWriter() {
-        LoanItemWriter repositoryItemWriter = new LoanItemWriter(loanLockingService);
-        repositoryItemWriter.setRepository(loanRepository);
-        return repositoryItemWriter;
+        return new LoanItemWriter(loanLockingService, loanRepository);
     }
 }

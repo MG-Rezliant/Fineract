@@ -20,6 +20,7 @@ package org.apache.fineract.accounting.glaccount.jobs.updatetrialbalancedetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +31,10 @@ import org.apache.fineract.accounting.journalentry.domain.JournalEntryRepository
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.core.service.database.RoutingDataSourceServiceFactory;
-import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 
@@ -77,7 +78,9 @@ public class UpdateTrialBalanceDetailsTasklet implements Tasklet {
             tb.setGlAccountId((Long) row[1]);
             tb.setAmount((BigDecimal) row[2]);
             tb.setEntryDate((LocalDate) row[3]);
-            tb.setTransactionDate((LocalDate) row[4]);
+            // je.createdDate is the OffsetDateTime audit field; EclipseLink 5 materializes it as such in
+            // Object[] projections where EclipseLink 4 handed back a date-castable value
+            tb.setTransactionDate(((OffsetDateTime) row[4]).toLocalDate());
             tb.setClosingBalance((BigDecimal) row[5]);
             return tb;
         }).toList();

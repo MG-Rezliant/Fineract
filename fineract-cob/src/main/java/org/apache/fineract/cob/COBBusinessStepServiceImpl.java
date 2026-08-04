@@ -36,10 +36,11 @@ import org.apache.fineract.infrastructure.core.domain.AbstractPersistableCustom;
 import org.apache.fineract.infrastructure.core.domain.ActionContext;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.event.business.service.BusinessEventNotifierService;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -56,6 +57,15 @@ public class COBBusinessStepServiceImpl implements COBBusinessStepService {
 
     @SuppressWarnings({ "unchecked" })
     @Override
+    // Spring Batch 6's ChunkOrientedStep submits item processing to the step's task executor.
+    // The chunk transaction is bound to the step thread and wraps only the write phase, so in
+    // multi-threaded mode processItem() runs on a pool thread with NO transaction. Business steps
+    // below write to the DB, so processing must run in a transaction of its own:
+    // - sequential mode: REQUIRED joins the chunk transaction (as in Batch 5);
+    // - concurrent mode: REQUIRED opens a NEW transaction on the worker thread that commits
+    // independently of the chunk write. Chunk-level atomicity is therefore NOT preserved when
+    // concurrent - process-time writes are not rolled back with the chunk. See FINERACT-2684.
+    @Transactional
     public <T extends COBBusinessStep<S>, S extends AbstractPersistableCustom<Long>> S run(TreeMap<Long, String> executionMap, S item) {
         if (executionMap == null || executionMap.isEmpty()) {
             throw new BusinessStepException("Execution map is empty! COB Business step execution skipped!");
