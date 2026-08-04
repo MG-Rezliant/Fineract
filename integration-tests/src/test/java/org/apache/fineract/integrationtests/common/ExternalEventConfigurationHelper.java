@@ -789,6 +789,15 @@ public class ExternalEventConfigurationHelper {
         workingCapitalLoanDelinquencyRangeChangeBusinessEvent.put("type", "WorkingCapitalLoanDelinquencyRangeChangeBusinessEvent");
         workingCapitalLoanDelinquencyRangeChangeBusinessEvent.put("enabled", false);
         defaults.add(workingCapitalLoanDelinquencyRangeChangeBusinessEvent);
+        Map<String, Object> workingCapitalLoanWrittenOffBusinessEvent = new HashMap<>();
+        workingCapitalLoanWrittenOffBusinessEvent.put("type", "WorkingCapitalLoanWrittenOffBusinessEvent");
+        workingCapitalLoanWrittenOffBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanWrittenOffBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanUndoWrittenOffBusinessEvent = new HashMap<>();
+        workingCapitalLoanUndoWrittenOffBusinessEvent.put("type", "WorkingCapitalLoanUndoWrittenOffBusinessEvent");
+        workingCapitalLoanUndoWrittenOffBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanUndoWrittenOffBusinessEvent);
 
         return defaults;
     }
