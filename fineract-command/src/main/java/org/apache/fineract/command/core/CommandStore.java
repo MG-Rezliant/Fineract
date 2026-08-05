@@ -32,5 +32,5 @@ public interface CommandStore {
 
     CommandState getStateByKey(String key);
 
-    void store(Command<?> command, Object response, CommandState state);
+    void store(CommandContext<?, ?> ctx);
 }
