@@ -319,7 +319,7 @@ Feature: Working Capital Breach Past Due Amount
     Then Working Capital loan balance has breach past due amount "900"
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
-  @TestRailId:TODO_ADD_001
+  @TestRailId:C93978
   Scenario: Verify breach past due amount after backdated repayment - no payment
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
@@ -336,11 +336,13 @@ Feature: Working Capital Breach Past Due Amount
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "900"
+    # --- Backdated full repayment into the closed breach period ---
     When Customer makes repayment on "05 January 2026" with 900.0 transaction amount on Working Capital loan
     Then Working Capital loan balance has breach past due amount "0"
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
-  @TestRailId:TODO_ADD_002
+  @TestRailId:C93979
   Scenario: Verify breach past due amount after backdated repayment - partial payment
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
@@ -359,11 +361,13 @@ Feature: Working Capital Breach Past Due Amount
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "500"
+    # --- Backdated full repayment clears the remaining closed breach period ---
     When Customer makes repayment on "05 January 2026" with 500.0 transaction amount on Working Capital loan
     Then Working Capital loan balance has breach past due amount "0"
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
-  @TestRailId:TODO_ADD_003
+  @TestRailId:C93980
   Scenario: Verify breach past due amount after backdated repayment - full payment
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
@@ -382,12 +386,14 @@ Feature: Working Capital Breach Past Due Amount
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "500"
+    # --- Backdated partial repayment leaves remaining past due in the closed breach period ---
     When Customer makes repayment on "05 January 2026" with 400.0 transaction amount on Working Capital loan
     Then Working Capital loan balance has breach past due amount "100"
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
 
-  @TestRailId:TODO_ADD_004
+  @TestRailId:C93981
   Scenario: Verify breach past due amount after undo repayment dates back to an already past breach period - results no breach
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
@@ -406,11 +412,13 @@ Feature: Working Capital Breach Past Due Amount
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "0"
+    # --- Undo of backdated repayment reinstates the full breach past due amount ---
     When Customer undo "3"th working capital transaction made on "01 January 2026"
     Then Working Capital loan balance has breach past due amount "900"
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
-  @TestRailId:TODO_ADD_005
+  @TestRailId:C93982
   Scenario: Verify breach past due amount after undo repayment dates back to an already past breach period - results partial breach
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
@@ -433,12 +441,14 @@ Feature: Working Capital Breach Past Due Amount
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "0"
+    # --- Undo of backdated partial repayment reinstates partial breach past due amount ---
     When Customer undo "3"th working capital transaction made on "01 January 2026"
     Then Working Capital loan balance has breach past due amount "400"
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
-  @TestRailId:TODO_ADD_006
-  Scenario: Verify breach past due amount after undo repayment dates back to an already past breach period - results full breach
+  @TestRailId:C93983
+  Scenario: Verify breach past due amount after undo repayment dates back to an already past breach period - results partial breach
     When Admin sets the business date to "01 January 2026"
     And Admin creates a client with random data
     And Admin creates a Working Capital Loan Product with custom breach config and overrides enabled:
@@ -452,12 +462,32 @@ Feature: Working Capital Breach Past Due Amount
     And Admin runs inline COB job for Working Capital Loan by loanId
     # Minimum payment = (9000 principal + 1000 discount) * 9% = 900
     When Customer makes repayment on "01 January 2026" with 400.0 transaction amount on Working Capital loan
-    When Customer makes repayment on "01 January 2026" with 900.0 transaction amount on Working Capital loan
     Then Working Capital loan balance has breach past due amount "0"
+    Then Working Capital loan breach schedule has the following data:
+      | periodNumber | fromDate   | toDate     | numberOfDays | minPaymentAmount | outstandingAmount | nearBreach | breach |
+      | 1            | 2026-01-01 | 2026-01-07 | 7            | 900.00           | 500.00            | null       | null   |
+    When Admin sets the business date to "02 January 2026"
+    And Admin runs inline COB job for Working Capital Loan by loanId
+    When Customer makes repayment on "02 January 2026" with 900.0 transaction amount on Working Capital loan
+    Then Working Capital loan balance has breach past due amount "0"
+    Then Working Capital loan breach schedule has the following data:
+      | periodNumber | fromDate   | toDate     | numberOfDays | minPaymentAmount | outstandingAmount | nearBreach | breach |
+      | 1            | 2026-01-01 | 2026-01-07 | 7            | 900.00           | 0.00              | null       | false  |
     When Admin sets the business date to "09 January 2026"
     And Admin runs inline COB job for Working Capital Loan by loanId
     Then Working Capital loan balance has breach past due amount "0"
-    When Customer undo "3"th working capital transaction made on "01 January 2026"
-    Then Working Capital loan balance has breach past due amount "900"
+    Then Working Capital loan breach schedule has the following data:
+      | periodNumber | fromDate   | toDate     | numberOfDays | minPaymentAmount | outstandingAmount | nearBreach | breach |
+      | 1            | 2026-01-01 | 2026-01-07 | 7            | 900.00           | 0.00              | null       | false  |
+      | 2            | 2026-01-08 | 2026-01-14 | 7            | 900.00           | 900.00            | null       | null   |
+    # --- Undo of backdated repayment reinstates partial breach past due amount ---
+    And Customer undo "1"th "REPAYMENT" transaction made on "02 January 2026" on Working Capital loan
+#    When Customer undo "3"th working capital transaction made on "01 January 2026"
+    Then Working Capital loan balance has breach past due amount "500"
+    Then Working Capital loan breach schedule has the following data:
+      | periodNumber | fromDate   | toDate     | numberOfDays | minPaymentAmount | outstandingAmount | nearBreach | breach |
+      | 1            | 2026-01-01 | 2026-01-07 | 7            | 900.00           | 500.00            | null       | true   |
+      | 2            | 2026-01-08 | 2026-01-14 | 7            | 900.00           | 900.00            | null       | null   |
+    # --- Close loan ---
     Then Admin closes the Working Capital loan with a full repayment on "09 January 2026"
 
