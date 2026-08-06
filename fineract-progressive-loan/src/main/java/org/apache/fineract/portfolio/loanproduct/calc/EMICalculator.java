@@ -64,6 +64,21 @@ public interface EMICalculator {
             LocalDate dueDate);
 
     /**
+     * Corrects the repayment periods which an EMI recalculation left with a smaller amount than what has already been
+     * paid on the repayment schedule installment they belong to. Such a period would end up with a negative outstanding
+     * amount, therefore its amount is raised back to the paid amount and the difference is moved onto a period which
+     * still has room for it.
+     * <p>
+     * Loans without interest recalculation report their payments only on the installments and not on the interest
+     * model, so the model needs the paid amounts of the installments to be able to do this. They are taken over only
+     * when there is a period to correct, hence a model which is in line with its installments is left untouched.
+     *
+     * @return true when the model had to be corrected
+     */
+    boolean alignPeriodsWithPaidAmounts(ProgressiveLoanInterestScheduleModel scheduleModel,
+            @NotNull List<RepaymentScheduleInstallmentData> installments, LocalDate tillDate);
+
+    /**
      * Applies the disbursement on the interest model. This method recalculates the EMI amounts from the action date.
      */
     void addDisbursement(ProgressiveLoanInterestScheduleModel scheduleModel, LocalDate disbursementDueDate, Money disbursedAmount);

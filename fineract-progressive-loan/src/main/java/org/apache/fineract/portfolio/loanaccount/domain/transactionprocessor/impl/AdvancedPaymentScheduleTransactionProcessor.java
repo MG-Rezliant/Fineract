@@ -370,6 +370,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
                     .seedDate(newDueDate) //
                     .build();
             emiCalculator.changeDueDate(scheduleModel, loanApplicationTerms, targetRepaymentPeriodDueDate, newDueDate);
+            alignModelWithPaidAmounts(scheduleModel, installments, newDueDate);
         }
 
         final boolean dateShiftOnly = !canUseEmiCalculator || isStalePreReAgeVariation || !targetExistsInScheduleModel;
@@ -501,6 +502,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         final int repaymentPeriodsToAdd = termVariationsData.getDecimalValue().intValue();
         emiCalculator.addRepaymentPeriods(scheduleModel, interestRateChangeSubmittedOnDate, repaymentPeriodsToAdd,
                 EMICalculatorDataMapper.toProcessedTransactionDataList(alreadyProcessedTransactions));
+        alignModelWithPaidAmounts(scheduleModel, installments, interestRateChangeSubmittedOnDate);
         final Loan loan = installments.getFirst().getLoan();
 
         int nextInstallmentNumber = installments.stream().mapToInt(LoanRepaymentScheduleInstallment::getInstallmentNumber).max().orElse(0)
@@ -528,6 +530,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         final LocalDate interestRateChangeSubmittedOnDate = termVariationsData.getTermVariationApplicableFrom();
         final BigDecimal newInterestRate = termVariationsData.getDecimalValue();
         emiCalculator.changeInterestRate(scheduleModel, interestRateChangeSubmittedOnDate, newInterestRate);
+        alignModelWithPaidAmounts(scheduleModel, installments, interestRateChangeSubmittedOnDate);
         processInterestRateChangeOnInstallments(scheduleModel, interestRateChangeSubmittedOnDate, installments);
     }
 
@@ -536,6 +539,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
         final LocalDate interestRateChangeSubmittedOnDate = termVariationsData.getTermVariationApplicableFrom();
         final LocalDate pauseEndDate = termVariationsData.getDateValue();
         emiCalculator.applyInterestPause(scheduleModel, interestRateChangeSubmittedOnDate, pauseEndDate);
+        alignModelWithPaidAmounts(scheduleModel, installments, interestRateChangeSubmittedOnDate);
         processInterestRateChangeOnInstallments(scheduleModel, interestRateChangeSubmittedOnDate, installments);
     }
 
@@ -1674,6 +1678,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
 
         Money amortizableAmount = disbursementTransaction.getAmount(currency).minus(downPaymentAmount);
         emiCalculator.addDisbursement(model, transactionDate, amortizableAmount);
+        alignModelWithPaidAmounts(model, installments, transactionDate);
 
         boolean needsNPlusOneInstallment = installments.stream()
                 .filter(i -> i.getDueDate().isAfter(transactionDate) || i.getDueDate().isEqual(transactionDate))
@@ -1765,6 +1770,7 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
 
         Money amortizableAmount = capitalizedIncomeTransaction.getAmount(currency);
         emiCalculator.addCapitalizedIncome(model, transactionDate, amortizableAmount);
+        alignModelWithPaidAmounts(model, installments, transactionDate);
 
         recalculateRepaymentPeriodsWithEMICalculation(amortizableAmount, model, installments, capitalizedIncomeTransaction, currency,
                 ((ProgressiveTransactionCtx) transactionCtx).getProcessedLoanCharges());
@@ -3777,6 +3783,24 @@ public class AdvancedPaymentScheduleTransactionProcessor extends AbstractLoanRep
             firstNormalInstallmentNumber = LoanRepaymentScheduleProcessingWrapper
                     .fetchFirstNormalInstallmentNumber(getCtx().getInstallments());
         }
+    }
+
+    /**
+     * Keeps an EMI recalculation from leaving an installment with less amount than what has already been paid on it,
+     * which would show up as a negative outstanding amount on the loan. To be called right after every operation which
+     * recalculates the EMI amounts on the interest model, and before the installments are updated from the model.
+     * <p>
+     * Only loans which do not report their payments to the interest model need this. The interest model of the other
+     * loans knows the paid amounts on its own and corrects itself while the payments are processed.
+     */
+    private void alignModelWithPaidAmounts(final ProgressiveLoanInterestScheduleModel model,
+            final List<LoanRepaymentScheduleInstallment> installments, final LocalDate tillDate) {
+        if (model == null || installments == null || installments.isEmpty()
+                || installments.getFirst().getLoan().isInterestBearingAndInterestRecalculationEnabled()) {
+            return;
+        }
+        emiCalculator.alignPeriodsWithPaidAmounts(model, EMICalculatorDataMapper.toRepaymentScheduleInstallmentDataList(installments),
+                tillDate);
     }
 
     private boolean isInterestRecalculationSupported(TransactionCtx ctx, Loan loan) {

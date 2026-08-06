@@ -33,11 +33,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.function.TriConsumer;
 import org.apache.fineract.infrastructure.core.domain.LocalDateInterval;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -117,6 +119,51 @@ public final class ProgressiveEMICalculator implements EMICalculator {
             return Optional.empty();
         }
         return scheduleModel.findRepaymentPeriodByFromAndDueDate(repaymentPeriodFromDate, repaymentPeriodDueDate);
+    }
+
+    @Override
+    public boolean alignPeriodsWithPaidAmounts(final ProgressiveLoanInterestScheduleModel scheduleModel,
+            @NotNull final List<RepaymentScheduleInstallmentData> installments, final LocalDate tillDate) {
+        if (scheduleModel == null || scheduleModel.repaymentPeriods().isEmpty() || !hasPeriodBelowPaidAmount(scheduleModel, installments)) {
+            return false;
+        }
+        forEachPeriodOfInstallment(scheduleModel, installments, RepaymentPeriod::setPaidAmounts);
+        calculateOutstandingBalance(scheduleModel);
+        calculateLastUnpaidRepaymentPeriodEMI(scheduleModel, tillDate);
+        return true;
+    }
+
+    private boolean hasPeriodBelowPaidAmount(final ProgressiveLoanInterestScheduleModel scheduleModel,
+            final List<RepaymentScheduleInstallmentData> installments) {
+        final MathContext mc = scheduleModel.mc();
+        final AtomicBoolean periodBelowPaidAmount = new AtomicBoolean(false);
+        forEachPeriodOfInstallment(scheduleModel, installments, (repaymentPeriod, paidPrincipal, paidInterest) -> {
+            if (paidPrincipal.plus(paidInterest, mc)
+                    .isGreaterThan(repaymentPeriod.getEmiPlusCreditedAmountsPlusFutureUnrecognizedInterest())) {
+                periodBelowPaidAmount.set(true);
+            }
+        });
+        return periodBelowPaidAmount.get();
+    }
+
+    /**
+     * Visits the repayment periods which belong to an installment with the paid amounts of that installment. Only the
+     * amounts which the model does not know about yet are handed over, so that the paid amounts the model tracks on its
+     * own are never contradicted.
+     */
+    private void forEachPeriodOfInstallment(final ProgressiveLoanInterestScheduleModel scheduleModel,
+            final List<RepaymentScheduleInstallmentData> installments, final TriConsumer<RepaymentPeriod, Money, Money> consumer) {
+        final MathContext mc = scheduleModel.mc();
+        final CurrencyData currency = scheduleModel.loanProductRelatedDetail().getCurrencyData();
+        for (final RepaymentScheduleInstallmentData installment : installments) {
+            if (installment.isDownPayment() || installment.isAdditional()) {
+                continue;
+            }
+            scheduleModel.findRepaymentPeriodByFromAndDueDate(installment.getFromDate(), installment.getDueDate())
+                    .ifPresent(repaymentPeriod -> consumer.accept(repaymentPeriod,
+                            MathUtil.max(repaymentPeriod.getPaidPrincipal(), Money.of(currency, installment.getPaidPrincipal(), mc), false),
+                            MathUtil.max(repaymentPeriod.getPaidInterest(), Money.of(currency, installment.getPaidInterest(), mc), false)));
+        }
     }
 
     /**
