@@ -790,6 +790,95 @@ public class ExternalEventConfigurationHelper {
         workingCapitalLoanDelinquencyRangeChangeBusinessEvent.put("enabled", false);
         defaults.add(workingCapitalLoanDelinquencyRangeChangeBusinessEvent);
 
+        Map<String, Object> workingCapitalLoanPeriodPaymentRateChangedBusinessEvent = new HashMap<>();
+        workingCapitalLoanPeriodPaymentRateChangedBusinessEvent.put("type", "WorkingCapitalLoanPeriodPaymentRateChangedBusinessEvent");
+        workingCapitalLoanPeriodPaymentRateChangedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanPeriodPaymentRateChangedBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanDelinquencyScheduleChangedBusinessEvent = new HashMap<>();
+        workingCapitalLoanDelinquencyScheduleChangedBusinessEvent.put("type", "WorkingCapitalLoanDelinquencyScheduleChangedBusinessEvent");
+        workingCapitalLoanDelinquencyScheduleChangedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanDelinquencyScheduleChangedBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanDelinquencyCalculationDisabledBusinessEvent = new HashMap<>();
+        workingCapitalLoanDelinquencyCalculationDisabledBusinessEvent.put("type",
+                "WorkingCapitalLoanDelinquencyCalculationDisabledBusinessEvent");
+        workingCapitalLoanDelinquencyCalculationDisabledBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanDelinquencyCalculationDisabledBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanDelinquencyCalculationEnabledBusinessEvent = new HashMap<>();
+        workingCapitalLoanDelinquencyCalculationEnabledBusinessEvent.put("type",
+                "WorkingCapitalLoanDelinquencyCalculationEnabledBusinessEvent");
+        workingCapitalLoanDelinquencyCalculationEnabledBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanDelinquencyCalculationEnabledBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanBreachScheduleChangedBusinessEvent = new HashMap<>();
+        workingCapitalLoanBreachScheduleChangedBusinessEvent.put("type", "WorkingCapitalLoanBreachScheduleChangedBusinessEvent");
+        workingCapitalLoanBreachScheduleChangedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanBreachScheduleChangedBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanBreachCalculationDisabledBusinessEvent = new HashMap<>();
+        workingCapitalLoanBreachCalculationDisabledBusinessEvent.put("type", "WorkingCapitalLoanBreachCalculationDisabledBusinessEvent");
+        workingCapitalLoanBreachCalculationDisabledBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanBreachCalculationDisabledBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanBreachCalculationEnabledBusinessEvent = new HashMap<>();
+        workingCapitalLoanBreachCalculationEnabledBusinessEvent.put("type", "WorkingCapitalLoanBreachCalculationEnabledBusinessEvent");
+        workingCapitalLoanBreachCalculationEnabledBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanBreachCalculationEnabledBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanChargeOffBusinessEvent = new HashMap<>();
+        workingCapitalLoanChargeOffBusinessEvent.put("type", "WorkingCapitalLoanChargeOffBusinessEvent");
+        workingCapitalLoanChargeOffBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanChargeOffBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanFraudChangedBusinessEvent = new HashMap<>();
+        workingCapitalLoanFraudChangedBusinessEvent.put("type", "WorkingCapitalLoanFraudChangedBusinessEvent");
+        workingCapitalLoanFraudChangedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanFraudChangedBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanPayoutRefundTransactionBusinessEvent = new HashMap<>();
+        workingCapitalLoanPayoutRefundTransactionBusinessEvent.put("type", "WorkingCapitalLoanPayoutRefundTransactionBusinessEvent");
+        workingCapitalLoanPayoutRefundTransactionBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanPayoutRefundTransactionBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanGoodwillCreditTransactionBusinessEvent = new HashMap<>();
+        workingCapitalLoanGoodwillCreditTransactionBusinessEvent.put("type", "WorkingCapitalLoanGoodwillCreditTransactionBusinessEvent");
+        workingCapitalLoanGoodwillCreditTransactionBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanGoodwillCreditTransactionBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanTransactionReversedBusinessEvent = new HashMap<>();
+        workingCapitalLoanTransactionReversedBusinessEvent.put("type", "WorkingCapitalLoanTransactionReversedBusinessEvent");
+        workingCapitalLoanTransactionReversedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanTransactionReversedBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanChargeOffTransactionBusinessEvent = new HashMap<>();
+        workingCapitalLoanChargeOffTransactionBusinessEvent.put("type", "WorkingCapitalLoanChargeOffTransactionBusinessEvent");
+        workingCapitalLoanChargeOffTransactionBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanChargeOffTransactionBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent = new HashMap<>();
+        workingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent.put("type",
+                "WorkingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent");
+        workingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent = new HashMap<>();
+        workingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent.put("type",
+                "WorkingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent");
+        workingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanAddChargeBusinessEvent = new HashMap<>();
+        workingCapitalLoanAddChargeBusinessEvent.put("type", "WorkingCapitalLoanAddChargeBusinessEvent");
+        workingCapitalLoanAddChargeBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanAddChargeBusinessEvent);
+
+        Map<String, Object> workingCapitalLoanJournalEntryCreatedBusinessEvent = new HashMap<>();
+        workingCapitalLoanJournalEntryCreatedBusinessEvent.put("type", "WorkingCapitalLoanJournalEntryCreatedBusinessEvent");
+        workingCapitalLoanJournalEntryCreatedBusinessEvent.put("enabled", false);
+        defaults.add(workingCapitalLoanJournalEntryCreatedBusinessEvent);
+
         return defaults;
     }
 

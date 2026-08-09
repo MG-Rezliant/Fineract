@@ -124,7 +124,17 @@ public class ExternalEventConfigurationValidationServiceTest {
                 "WorkingCapitalLoanApprovedBusinessEvent", "WorkingCapitalLoanUndoApprovalBusinessEvent",
                 "WorkingCapitalLoanRejectedBusinessEvent", "WorkingCapitalLoanDisbursalBusinessEvent",
                 "WorkingCapitalLoanUndoDisbursalBusinessEvent", "WorkingCapitalLoanStatusChangedBusinessEvent",
-                "WorkingCapitalLoanBalanceChangedBusinessEvent", "WorkingCapitalLoanDelinquencyRangeChangeBusinessEvent");
+                "WorkingCapitalLoanBalanceChangedBusinessEvent", "WorkingCapitalLoanDelinquencyRangeChangeBusinessEvent",
+                "WorkingCapitalLoanPeriodPaymentRateChangedBusinessEvent", "WorkingCapitalLoanDelinquencyScheduleChangedBusinessEvent",
+                "WorkingCapitalLoanDelinquencyCalculationDisabledBusinessEvent",
+                "WorkingCapitalLoanDelinquencyCalculationEnabledBusinessEvent", "WorkingCapitalLoanBreachScheduleChangedBusinessEvent",
+                "WorkingCapitalLoanBreachCalculationDisabledBusinessEvent", "WorkingCapitalLoanBreachCalculationEnabledBusinessEvent",
+                "WorkingCapitalLoanChargeOffBusinessEvent", "WorkingCapitalLoanFraudChangedBusinessEvent",
+                "WorkingCapitalLoanPayoutRefundTransactionBusinessEvent", "WorkingCapitalLoanGoodwillCreditTransactionBusinessEvent",
+                "WorkingCapitalLoanTransactionReversedBusinessEvent", "WorkingCapitalLoanChargeOffTransactionBusinessEvent",
+                "WorkingCapitalLoanDiscountFeeAmortizationTransactionBusinessEvent",
+                "WorkingCapitalLoanDiscountFeeAmortizationAdjustmentTransactionBusinessEvent", "WorkingCapitalLoanAddChargeBusinessEvent",
+                "WorkingCapitalLoanJournalEntryCreatedBusinessEvent");
 
         List<FineractPlatformTenant> tenants = List
                 .of(new FineractPlatformTenant(1L, "default", "Default Tenant", "Europe/Budapest", null));
