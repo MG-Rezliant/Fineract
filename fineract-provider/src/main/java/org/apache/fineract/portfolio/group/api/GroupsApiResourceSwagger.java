@@ -138,6 +138,8 @@ final class GroupsApiResourceSwagger {
             public Long id;
             @Schema(example = "AnotherGroup")
             public String name;
+            @Schema(example = "000-1A")
+            public String externalId;
             public GetGroupsStatus status;
             @Schema(example = "false")
             public Boolean active;
@@ -197,8 +199,18 @@ final class GroupsApiResourceSwagger {
         public Long officeId;
         @Schema(example = "Pending Group")
         public String name;
+        @Schema(example = "000-1A")
+        public String externalId;
         @Schema(example = "false")
         public Boolean active;
+        @Schema(example = "04 March 2011")
+        public String activationDate;
+        @Schema(example = "04 March 2011")
+        public String submittedOnDate;
+        @Schema(example = "dd MMMM yyyy")
+        public String dateFormat;
+        @Schema(example = "en")
+        public String locale;
     }
 
     @Schema(description = "PostGroupsResponse")
