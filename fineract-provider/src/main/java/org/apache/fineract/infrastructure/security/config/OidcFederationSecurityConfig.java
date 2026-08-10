@@ -19,6 +19,7 @@
 package org.apache.fineract.infrastructure.security.config;
 
 import org.apache.fineract.infrastructure.businessdate.service.BusinessDateReadPlatformService;
+import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.core.domain.FineractRequestContextHolder;
 import org.apache.fineract.infrastructure.core.filters.CallerIpTrackingFilter;
@@ -87,6 +88,8 @@ public class OidcFederationSecurityConfig {
 
     @Autowired
     private FineractProperties fineractProperties;
+    @Autowired
+    private ConfigurationDomainService configurationDomainService;
 
     @Autowired
     private FineractOidcUserService oidcUserService;
@@ -211,7 +214,8 @@ public class OidcFederationSecurityConfig {
     }
 
     public IdempotencyStoreFilter idempotencyStoreFilter() {
-        return new IdempotencyStoreFilter(fineractRequestContextHolder, idempotencyStoreHelper, fineractProperties);
+        return new IdempotencyStoreFilter(fineractRequestContextHolder, idempotencyStoreHelper, fineractProperties,
+                configurationDomainService);
     }
 
     public CallerIpTrackingFilter callerIpTrackingFilter() {
