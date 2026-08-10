@@ -25,6 +25,7 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
 import java.util.Map;
+import org.apache.fineract.client.models.ExternalEventConfigurationUpdateRequest;
 import org.apache.fineract.integrationtests.common.ExternalEventConfigurationHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.junit.jupiter.api.AfterEach;
@@ -68,9 +69,10 @@ public class ExternalEventConfigurationIntegrationTest {
 
     @Test
     public void updateExternalEventConfigurations() {
-        String updateRequestJson = ExternalEventConfigurationHelper.getExternalEventConfigurationsForUpdateJSON();
+        ExternalEventConfigurationUpdateRequest updateRequest = ExternalEventConfigurationHelper
+                .getExternalEventConfigurationsForUpdateRequest();
         final Map<String, Boolean> updatedConfigurations = ExternalEventConfigurationHelper.updateExternalEventConfigurations(requestSpec,
-                responseSpec, updateRequestJson);
+                responseSpec, updateRequest);
         Assertions.assertEquals(updatedConfigurations.size(), 2);
         Assertions.assertTrue(updatedConfigurations.containsKey("CentersCreateBusinessEvent"));
         Assertions.assertTrue(updatedConfigurations.containsKey("ClientActivateBusinessEvent"));
