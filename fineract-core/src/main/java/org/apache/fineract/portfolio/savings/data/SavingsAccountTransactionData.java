@@ -21,6 +21,7 @@ package org.apache.fineract.portfolio.savings.data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,6 +65,7 @@ public class SavingsAccountTransactionData implements Serializable {
     private final String accountNo;
     private final ExternalId externalId;
     private final LocalDate date;
+    private OffsetTime transactionTime;
     private final CurrencyData currency;
     private final PaymentDetailData paymentDetailData;
     private final BigDecimal amount;
@@ -244,6 +246,11 @@ public class SavingsAccountTransactionData implements Serializable {
                 savingsAccountTransactionData.getSubmittedOnDate(), savingsAccountTransactionData.isInterestedPostedAsOn(),
                 savingsAccountTransactionData.getSubmittedByUsername(), savingsAccountTransactionData.getNote(),
                 savingsAccountTransactionData.getLienTransaction());
+    }
+
+    public SavingsAccountTransactionData withTransactionTime(final OffsetTime transactionTime) {
+        this.transactionTime = transactionTime;
+        return this;
     }
 
     public static SavingsAccountTransactionData template(final Long savingsId, final String savingsAccountNo,
