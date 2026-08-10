@@ -73,7 +73,8 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
     void testUpdateRateOnActiveLoan() {
         Long loanId = createAndDisburseLoan(BigDecimal.valueOf(5000), BigDecimal.valueOf(18));
 
-        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17)));
+        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17),
+                Utils.dateFormatter.format(Utils.getLocalDateOfTenant())));
 
         GetWorkingCapitalLoansLoanIdResponse loan = wcLoanHelper.getLoanDetails(loanId);
         assertNotNull(loan);
@@ -84,7 +85,8 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
     void testRateChangeHistoryIsRecorded() {
         Long loanId = createAndDisburseLoan(BigDecimal.valueOf(5000), BigDecimal.valueOf(18));
 
-        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17)));
+        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17),
+                Utils.dateFormatter.format(Utils.getLocalDateOfTenant())));
 
         List<WorkingCapitalLoanPeriodPaymentRateChangeData> history = wcLoanHelper.getRateChangeHistory(loanId);
         assertFalse(history.isEmpty(), "Rate change history should not be empty");
@@ -102,7 +104,7 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
         Long loanId = submitAndTrack(clientId, productId, BigDecimal.valueOf(5000), BigDecimal.valueOf(18), today);
 
         CallFailedRuntimeException exception = wcLoanHelper.updateRateExpectingError(loanId,
-                WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17)));
+                WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17), today));
         assertTrue(exception.getStatus() >= 400,
                 "Rate change on non-active loan should fail with 4xx status, got: " + exception.getStatus());
     }
@@ -111,8 +113,9 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
     void testMultipleRateChangesAutoReversesPrevious() {
         Long loanId = createAndDisburseLoan(BigDecimal.valueOf(5000), BigDecimal.valueOf(18));
 
-        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17)));
-        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15)));
+        String today = Utils.dateFormatter.format(Utils.getLocalDateOfTenant());
+        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(17), today));
+        wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15), today));
 
         List<WorkingCapitalLoanPeriodPaymentRateChangeData> history = wcLoanHelper.getRateChangeHistory(loanId);
         assertEquals(2, history.size(), "Should have 2 rate change records");
@@ -134,13 +137,13 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
             Long loanId = createAndDisburseLoanOnDate(clientForTest, BigDecimal.valueOf(50000), BigDecimal.valueOf(18), "01 January 2026");
 
             // First rate change: 18 → 15 on Jan 1
-            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15)));
+            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15), "01 January 2026"));
 
             // Advance business date by 8 days
             businessDateHelper.updateBusinessDate("BUSINESS_DATE", "2026-01-09");
 
             // Second rate change: 15 → 11 on Jan 9
-            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(11)));
+            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(11), "09 January 2026"));
 
             GetWorkingCapitalLoansLoanIdResponse loan = wcLoanHelper.getLoanDetails(loanId);
             assertEquals(0, BigDecimal.valueOf(11).compareTo(loan.getPaymentRate()),
@@ -149,9 +152,10 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
             List<WorkingCapitalLoanPeriodPaymentRateChangeData> history = wcLoanHelper.getRateChangeHistory(loanId);
             assertEquals(2, history.size(), "Should have 2 rate change records");
 
-            // Latest (11%) should be active, first (15%) should be auto-reversed
-            assertFalse(history.get(0).getReversed(), "Latest rate change should be active");
-            assertTrue(history.get(1).getReversed(), "Previous rate change should be auto-reversed");
+            // Both stay active: only a change sharing an effective date overwrites, and these take effect on different
+            // dates, so each governs its own segment of the schedule.
+            assertFalse(history.get(0).getReversed(), "Rate change effective 09 January should be active");
+            assertFalse(history.get(1).getReversed(), "Rate change effective 01 January should stay active on its own date");
         });
     }
 
@@ -167,7 +171,7 @@ public class FeignWorkingCapitalLoanRateChangeTest extends FeignIntegrationTest 
             // Advance past the loan term — rate change at day 5 is past the schedule end
             businessDateHelper.updateBusinessDate("BUSINESS_DATE", "2026-01-06");
 
-            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15)));
+            wcLoanHelper.updateRate(loanId, WorkingCapitalLoanRequestBuilders.updateRate(BigDecimal.valueOf(15), "06 January 2026"));
 
             GetWorkingCapitalLoansLoanIdResponse loan = wcLoanHelper.getLoanDetails(loanId);
             assertEquals(0, BigDecimal.valueOf(15).compareTo(loan.getPaymentRate()),
