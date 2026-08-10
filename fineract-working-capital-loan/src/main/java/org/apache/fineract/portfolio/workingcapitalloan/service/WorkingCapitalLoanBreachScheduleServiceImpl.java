@@ -159,7 +159,9 @@ public class WorkingCapitalLoanBreachScheduleServiceImpl implements WorkingCapit
             return;
         }
         applyRepayment(currentPeriod.get(), amount, loanId);
-        recalculatePastDueAmount(loanId);
+        if (!currentPeriod.get().getToDate().isAfter(DateUtils.getBusinessLocalDate())) {
+            recalculatePastDueAmount(loanId);
+        }
     }
 
     private void applyRepayment(final WorkingCapitalLoanBreachSchedule period, BigDecimal payAmount, Long loanId) {
@@ -185,7 +187,9 @@ public class WorkingCapitalLoanBreachScheduleServiceImpl implements WorkingCapit
             return;
         }
         applyRepaymentUndo(currentPeriod.get(), amount, loanId);
-        recalculatePastDueAmount(loanId);
+        if (!currentPeriod.get().getToDate().isAfter(DateUtils.getBusinessLocalDate())) {
+            recalculatePastDueAmount(loanId);
+        }
     }
 
     private void applyRepaymentUndo(final WorkingCapitalLoanBreachSchedule period, final BigDecimal payAmount, final Long loanId) {
