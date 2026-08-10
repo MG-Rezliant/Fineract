@@ -16,32 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.fineract.portfolio.client.data;
+package org.apache.fineract.portfolio.client.command;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.Serial;
-import java.io.Serializable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.apache.fineract.command.core.Command;
+import org.apache.fineract.portfolio.client.data.ClientIdentifierDeleteRequest;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ClientIdentifierRequest implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    @Schema(example = "1")
-    public Long documentTypeId;
-    @Schema(example = "KA-54677")
-    public String documentKey;
-    @Schema(example = "Document has been verified")
-    public String description;
-    @Schema(example = "Active")
-    public String status;
-
-}
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class ClientIdentifierDeleteCommand extends Command<ClientIdentifierDeleteRequest> {}
