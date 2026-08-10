@@ -21,7 +21,7 @@ package org.apache.fineract.command.implementation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.fineract.command.core.Command;
+import org.apache.fineract.command.core.CommandContext;
 import org.apache.fineract.command.core.CommandHookAfter;
 import org.apache.fineract.command.core.CommandHookBefore;
 import org.apache.fineract.command.core.CommandHookError;
@@ -41,17 +41,17 @@ public class DefaultCommandHookManager implements CommandHookManager {
     private final List<CommandHookError> errorHooks;
 
     @Override
-    public void before(Command command) {
-        beforeHooks.forEach(processor -> processor.onBefore(command));
+    public void before(CommandContext ctx) {
+        beforeHooks.forEach(processor -> processor.onBefore(ctx));
     }
 
     @Override
-    public void after(Command command, Object response) {
-        afterHooks.forEach(processor -> processor.onAfter(command, response));
+    public void after(CommandContext ctx) {
+        afterHooks.forEach(processor -> processor.onAfter(ctx));
     }
 
     @Override
-    public void error(Command command, Throwable error) {
-        errorHooks.forEach(processor -> processor.onError(command, error));
+    public void error(CommandContext ctx) {
+        errorHooks.forEach(processor -> processor.onError(ctx));
     }
 }

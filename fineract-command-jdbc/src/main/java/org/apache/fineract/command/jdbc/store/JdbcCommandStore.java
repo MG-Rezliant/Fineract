@@ -34,12 +34,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.fineract.command.core.Command;
+import org.apache.fineract.command.core.CommandContext;
 import org.apache.fineract.command.core.CommandState;
 import org.apache.fineract.command.core.CommandStore;
 import org.apache.fineract.command.jdbc.JdbcCommandProperties;
 import org.apache.fineract.command.jdbc.store.domain.CommandEntity;
-import org.apache.fineract.command.jdbc.store.domain.CommandRepository;
-import org.apache.fineract.command.jdbc.store.mapping.CommandMapper;
+import org.apache.fineract.command.jdbc.store.domain.JdbcCommandRepository;
+import org.apache.fineract.command.jdbc.store.mapping.JdbcCommandMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -51,8 +52,8 @@ import org.springframework.stereotype.Component;
 @ConditionalOnMissingBean(value = CommandStore.class, ignored = JdbcCommandStore.class)
 public class JdbcCommandStore implements CommandStore {
 
-    private final CommandMapper mapper;
-    private final CommandRepository repository;
+    private final JdbcCommandMapper mapper;
+    private final JdbcCommandRepository repository;
     private final ObjectMapper objectMapper;
     private final JdbcCommandProperties properties;
 
@@ -96,8 +97,13 @@ public class JdbcCommandStore implements CommandStore {
 
     @Override
     @Retry(name = "commandStore", fallbackMethod = "fallback")
-    public void store(Command<?> command, Object response, CommandState state) {
+    public void store(CommandContext<?, ?> ctx) {
         final long startedAt = System.nanoTime();
+
+        final var command = ctx.getCommand();
+        final var response = ctx.getResponse();
+        final var state = ctx.getState();
+
         final var commandEntity = isNull(response) ? mapper.map(command) : mapper.map(command, response);
 
         if (state != null) {
@@ -119,7 +125,10 @@ public class JdbcCommandStore implements CommandStore {
         }
     }
 
-    void fallback(Command<?> command, Object response, CommandState state, Throwable t) throws Exception {
+    void fallback(CommandContext<?, ?> ctx, Throwable t) throws Exception {
+        final var command = ctx.getCommand();
+        final var state = ctx.getState();
+
         log.warn("Command store fallback idempotencyKey={}, state={}, payloadType={}, deadLetterQueueEnabled={}",
                 command.getIdempotencyKey(), state, payloadType(command), properties.getFileDeadLetterQueueEnabled(), t);
         if (Boolean.TRUE.equals(properties.getFileDeadLetterQueueEnabled())) {
