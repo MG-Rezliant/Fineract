@@ -39,7 +39,8 @@ import org.apache.fineract.client.models.GetJobsJobIDJobRunHistoryResponse;
 import org.apache.fineract.client.models.GetJobsResponse;
 import org.apache.fineract.client.models.GetSchedulerResponse;
 import org.apache.fineract.client.models.JobDetailHistoryDataSwagger;
-import org.apache.fineract.client.models.PutJobsJobIDRequest;
+import org.apache.fineract.client.models.JobUpdateRequest;
+import org.apache.fineract.client.util.Calls;
 import org.hamcrest.MatcherAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,8 +109,7 @@ public class SchedulerJobHelper {
                 .updateJobDetail((long) jobId, new PutJobsJobIDRequest().active(active)));
         return response.getChanges();
     }
-
-    public void updateSchedulerJob(long jobId, PutJobsJobIDRequest request) {
+    public void updateSchedulerJob(long jobId, JobUpdateRequest request) {
         ok(() -> FineractFeignClientHelper.getFineractFeignClient().schedulerJob().updateJobDetail(jobId, request));
     }
 

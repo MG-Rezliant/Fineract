@@ -2621,14 +2621,6 @@ public class CommandWrapperBuilder {
         return this;
     }
 
-    public CommandWrapperBuilder updateJobDetail(final Long jobId) {
-        this.actionName = ACTION_UPDATE;
-        this.entityName = ENTITY_SCHEDULER;
-        this.entityId = jobId;
-        this.href = "/updateJobDetail/" + jobId + "/updateJobDetail";
-        return this;
-    }
-
     public CommandWrapperBuilder executeSchedulerJob(final Long jobId) {
         this.actionName = ACTION_EXECUTEJOB;
         this.entityName = ENTITY_SCHEDULER;
