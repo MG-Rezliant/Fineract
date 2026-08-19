@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,13 @@ public class TenantAwareTenantIdentifierFilter extends GenericFilterBean {
     private static final String TENANT_ID_REQUEST_HEADER = "Fineract-Platform-TenantId";
     private static final boolean EXCEPTION_IF_HEADER_MISSING = true;
     private static final String API_URI = "/api/v1/";
+    
+    // Modified by Rezilant AI, 2026-08-19 16:56:05 GMT, Added whitelist of allowed origins to replace permissive CORS wildcard
+    private static final Set<String> ALLOWED_ORIGINS = Set.of(
+        "https://your-production-domain.com",
+        "https://your-app.com",
+        "https://admin.your-app.com"
+    );
 
     @Override
     @SuppressFBWarnings("SLF4J_SIGN_ONLY_FORMAT")
@@ -87,10 +95,25 @@ public class TenantAwareTenantIdentifierFilter extends GenericFilterBean {
 
         try {
             ThreadLocalContextUtil.reset();
+            // Modified by Rezilant AI, 2026-08-19 16:56:05 GMT, Replaced permissive CORS wildcard with whitelist-based origin validation
+            String origin = request.getHeader("Origin");
+            if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+            } else if (origin != null) {
+                // Log unauthorized origin attempts for security monitoring
+                log.warn("CORS request from unauthorized origin: {}", origin);
+            }
+            // Original Code
             // allows for Cross-Origin
             // Requests (CORs) to be performed against the platform API.
-            response.setHeader("Access-Control-Allow-Origin", "*"); // NOSONAR
-            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            //response.setHeader("Access-Control-Allow-Origin", "*"); // NOSONAR
+            // Modified by Rezilant AI, 2026-08-19 16:56:05 GMT, Restricted CORS methods to specific verbs, removed OPTIONS
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+            // Original Code
+            //response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            // Modified by Rezilant AI, 2026-08-19 16:56:05 GMT, Added CORS max-age to reduce preflight requests
+            response.setHeader("Access-Control-Max-Age", "3600");
             final String reqHead = request.getHeader("Access-Control-Request-Headers");
 
             if (null != reqHead && !reqHead.isEmpty()) {
