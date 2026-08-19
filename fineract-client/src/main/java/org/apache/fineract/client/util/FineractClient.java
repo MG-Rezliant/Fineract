@@ -441,7 +441,7 @@ public final class FineractClient {
      * can be a handy back door for non-trivial advanced customizations of the API client if you have extended Fineract
      * with your own REST APIs.
      */
-    public <S> S createService(Class<S> serviceClass) {
+    public &lt;S> S createService(Class&lt;S> serviceClass) {
         return retrofit.create(serviceClass);
     }
 
@@ -518,8 +518,11 @@ public final class FineractClient {
                         }
                     };
 
+                    // Modified by Rezilant AI, 2026-08-19 17:15:57 GMT, replaced insecure SSL with TLS for stronger cryptographic protocol
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    // Original Code
                     // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                    // SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
                     sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
                     SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
 
@@ -577,7 +580,7 @@ public final class FineractClient {
             return okBuilder;
         }
 
-        private <T> T has(String propertyName, T value) throws IllegalStateException {
+        private &lt;T> T has(String propertyName, T value) throws IllegalStateException {
             if (value == null) {
                 throw new IllegalStateException("Must call " + propertyName + "(...) to create valid Builder");
             }
