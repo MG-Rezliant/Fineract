@@ -44,20 +44,22 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    @SuppressWarnings("unused")
-    private static final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[] {};
-        }
-    };
+    // Modified by Rezilant AI, 2026-08-19 16:55:11 GMT, Removed insecure X509TrustManager that blindly accepts all certificates
+    // Original Code
+    // @SuppressWarnings("unused")
+    // private static final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+    //
+    //     @Override
+    //     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+    //
+    //     @Override
+    //     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+    //
+    //     @Override
+    //     public X509Certificate[] getAcceptedIssuers() {
+    //         return new X509Certificate[] {};
+    //     }
+    // };
 
     /**
      * Configure HTTP client to be "insecure", as in skipping host SSL certificate verification. While this can be
@@ -84,16 +86,61 @@ public final class ProcessorHelper {
     }
 
     private void configureInsecureClient(final OkHttpClient.Builder okBuilder) {
-        okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
+        // Modified by Rezilant AI, 2026-08-19 16:55:11 GMT, Updated to use proper TrustManagerFactory with secure certificate validation
+        try {
+            // Load the default trust store (contains trusted CA certificates)
+            javax.net.ssl.TrustManagerFactory trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
+                javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
+            );
+            trustManagerFactory.init((java.security.KeyStore) null); // Uses default system trust store
+
+            // Get the trust managers
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+
+            // Find X509TrustManager from the array
+            X509TrustManager x509TrustManager = null;
+            for (TrustManager tm : trustManagers) {
+                if (tm instanceof X509TrustManager) {
+                    x509TrustManager = (X509TrustManager) tm;
+                    break;
+                }
+            }
+
+            if (x509TrustManager != null) {
+                okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), x509TrustManager);
+            } else {
+                LOG.error("No X509TrustManager found in default trust managers");
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to configure secure SSL context", e);
+        }
+        // Original Code
+        // okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
         HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
         okBuilder.hostnameVerifier(insecureHostnameVerifier);
     }
 
     private SSLContext createInsecureSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
-        // FineractClient.Builder?
-        insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-        return insecureSSLContext;
+        // Modified by Rezilant AI, 2026-08-19 16:55:11 GMT, Initialize SSL context with proper trust managers for secure certificate validation
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        
+        // Load the default trust store (contains trusted CA certificates)
+        javax.net.ssl.TrustManagerFactory trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
+            javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
+        );
+        trustManagerFactory.init((java.security.KeyStore) null); // Uses default system trust store
+
+        // Get the trust managers
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+
+        // Initialize SSL context with proper trust managers
+        sslContext.init(null, trustManagers, new SecureRandom());
+        return sslContext;
+        // Original Code
+        // SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
+        // // FineractClient.Builder?
+        // insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+        // return insecureSSLContext;
     }
 
     @SuppressWarnings("rawtypes")
