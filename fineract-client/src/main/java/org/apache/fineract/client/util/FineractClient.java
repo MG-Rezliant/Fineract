@@ -504,28 +504,56 @@ public final class FineractClient {
                 okBuilder.hostnameVerifier(insecureHostnameVerifier);
 
                 try {
-                    X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-                        @Override
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return new X509Certificate[] {};
+                    // Modified by Rezilant AI, 2026-08-19 16:45:39 GMT, Replaced insecure empty trust manager with proper certificate validation using TrustManagerFactory
+                    // Use TrustManagerFactory with default algorithm for proper certificate validation
+                    import javax.net.ssl.TrustManagerFactory;
+                    import java.security.KeyStore;
+                    
+                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    trustManagerFactory.init((KeyStore) null);
+                    
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
+                    SSLSocketFactory secureSslSocketFactory = sslContext.getSocketFactory();
+                    
+                    // Get the X509TrustManager from the TrustManagerFactory
+                    X509TrustManager x509TrustManager = null;
+                    for (TrustManager tm : trustManagerFactory.getTrustManagers()) {
+                        if (tm instanceof X509TrustManager) {
+                            x509TrustManager = (X509TrustManager) tm;
+                            break;
                         }
-                    };
-
-                    // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
-                    sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-                    SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
-
-                    okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
+                    }
+                    
+                    if (x509TrustManager != null) {
+                        okBuilder.sslSocketFactory(secureSslSocketFactory, x509TrustManager);
+                    }
+                    
+                    // Original Code
+                    // X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+                    //
+                    //     @Override
+                    //     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+                    //
+                    //     @Override
+                    //     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+                    //
+                    //     @Override
+                    //     public X509Certificate[] getAcceptedIssuers() {
+                    //         return new X509Certificate[] {};
+                    //     }
+                    // };
+                    //
+                    // // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
+                    // SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                    // sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+                    // SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
+                    //
+                    // okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
                 } catch (NoSuchAlgorithmException | KeyManagementException e) {
                     throw new IllegalStateException("insecure() SSL configuration failed", e);
+                } catch (java.security.KeyStoreException e) {
+                    throw new IllegalStateException("KeyStore initialization failed", e);
                 }
             }
             return this;
