@@ -39,6 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+// Modified by Rezilant AI, 2026-08-21 17:20:00 GMT, Added safe expression evaluation library import
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 @Component
 @Slf4j
@@ -144,29 +147,74 @@ public class XBRLResultServiceImpl implements XBRLResultService {
         return accountBalanceMap;
     }
 
-    // Calculate Taxonomy value from expression
+    // Modified by Rezilant AI, 2026-08-21 17:20:00 GMT, Replaced unsafe ScriptEngine.eval() with safe exp4j library to prevent code injection
+    // Calculate Taxonomy value from expression using safe mathematical parser
     private BigDecimal processMappingString(Map<String, BigDecimal> accountBalanceMap, String mappingString) {
         final List<String> glCodes = getGLCodes(mappingString);
+        
+        // Build expression with variables
+        String expressionString = mappingString;
+        Map<String, String> variableMapping = new HashMap<>();
+        
         for (final String glcode : glCodes) {
-
             final BigDecimal balance = accountBalanceMap.get(glcode);
-            mappingString = mappingString.replaceAll("\\{" + glcode + "\\}", balance != null ? balance.toString() : "0");
+            String variableName = glcode.replaceAll("[^a-zA-Z0-9_]", "_"); // Sanitize variable name
+            variableMapping.put(glcode, variableName);
+            
+            // Replace in mapping string
+            expressionString = expressionString.replaceAll("\\{" + Pattern.quote(glcode) + "\\}", variableName);
         }
-
-        // evaluate the expression
-        float eval = 0f;
+        
         try {
-            final Number value = (Number) SCRIPT_ENGINE.eval(mappingString);
-            if (value != null) {
-                eval = value.floatValue();
+            ExpressionBuilder builder = new ExpressionBuilder(expressionString);
+            
+            // Add variables to builder
+            for (String variableName : variableMapping.values()) {
+                builder.variable(variableName);
             }
-        } catch (final ScriptException e) {
+            
+            Expression expression = builder.build();
+            
+            // Set variable values
+            for (final String glcode : glCodes) {
+                final BigDecimal balance = accountBalanceMap.get(glcode);
+                String variableName = variableMapping.get(glcode);
+                expression.setVariable(variableName, 
+                    balance != null ? balance.doubleValue() : 0.0);
+            }
+            
+            double result = expression.evaluate();
+            return BigDecimal.valueOf(result);
+            
+        } catch (Exception e) {
             log.error("Problem occurred in processMappingString function", e);
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalArgumentException("Invalid mathematical expression", e);
         }
-
-        return BigDecimal.valueOf(eval);
     }
+    // Original Code
+    // Calculate Taxonomy value from expression
+    // private BigDecimal processMappingString(Map<String, BigDecimal> accountBalanceMap, String mappingString) {
+    //     final List<String> glCodes = getGLCodes(mappingString);
+    //     for (final String glcode : glCodes) {
+    // 
+    //         final BigDecimal balance = accountBalanceMap.get(glcode);
+    //         mappingString = mappingString.replaceAll("\\{" + glcode + "\\}", balance != null ? balance.toString() : "0");
+    //     }
+    // 
+    //     // evaluate the expression
+    //     float eval = 0f;
+    //     try {
+    //         final Number value = (Number) SCRIPT_ENGINE.eval(mappingString);
+    //         if (value != null) {
+    //             eval = value.floatValue();
+    //         }
+    //     } catch (final ScriptException e) {
+    //         log.error("Problem occurred in processMappingString function", e);
+    //         throw new IllegalArgumentException(e.getMessage(), e);
+    //     }
+    // 
+    //     return BigDecimal.valueOf(eval);
+    // }
 
     public List<String> getGLCodes(final String template) {
 
