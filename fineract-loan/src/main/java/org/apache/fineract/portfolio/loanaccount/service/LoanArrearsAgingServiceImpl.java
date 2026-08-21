@@ -101,9 +101,19 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService {
         int count = this.jdbcTemplate.queryForObject("select count(mla.loan_id) from m_loan_arrears_aging mla where mla.loan_id =?",
                 Integer.class, loan.getId());
         List<String> updateStatement = new ArrayList<>();
+        // Modified by Rezilant AI, 2026-08-21 17:20:27 GMT, Replaced SQL injection vulnerable query with parameterized query using PreparedStatementCreator
         OriginalScheduleExtractor originalScheduleExtractor = new OriginalScheduleExtractor(loan.getId().toString(), sqlGenerator);
-        Map<Long, List<LoanSchedulePeriodData>> scheduleDate = this.jdbcTemplate.query(originalScheduleExtractor.schema,
-                originalScheduleExtractor);
+        Map<Long, List<LoanSchedulePeriodData>> scheduleDate = this.jdbcTemplate.query(
+            connection -> {
+                java.sql.PreparedStatement ps = connection.prepareStatement(originalScheduleExtractor.getParameterizedSchema());
+                ps.setLong(1, loan.getId());
+                return ps;
+            },
+            originalScheduleExtractor
+        );
+        // Original Code
+        // Map<Long, List<LoanSchedulePeriodData>> scheduleDate = this.jdbcTemplate.query(originalScheduleExtractor.schema,
+        //         originalScheduleExtractor);
         if (scheduleDate.size() > 0) {
             List<Map<String, Object>> transactions = getLoanSummary(loan.getId(), loan.getSummary());
             updateScheduleWithPaidDetail(scheduleDate, transactions);
@@ -119,8 +129,18 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService {
 
     @Override
     public Map<Long, List<LoanSchedulePeriodData>> getScheduleDate(String loanId) {
+        // Modified by Rezilant AI, 2026-08-21 17:20:27 GMT, Replaced SQL injection vulnerable query with parameterized query using PreparedStatementCreator
         OriginalScheduleExtractor originalScheduleExtractor = new OriginalScheduleExtractor(loanId, sqlGenerator);
-        return this.jdbcTemplate.query(originalScheduleExtractor.schema, originalScheduleExtractor);
+        return this.jdbcTemplate.query(
+            connection -> {
+                java.sql.PreparedStatement ps = connection.prepareStatement(originalScheduleExtractor.getParameterizedSchema());
+                ps.setLong(1, Long.parseLong(loanId));
+                return ps;
+            },
+            originalScheduleExtractor
+        );
+        // Original Code
+        // return this.jdbcTemplate.query(originalScheduleExtractor.schema, originalScheduleExtractor);
     }
 
     @Override
@@ -338,6 +358,8 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService {
     private static final class OriginalScheduleExtractor implements ResultSetExtractor<Map<Long, List<LoanSchedulePeriodData>>> {
 
         private final String schema;
+        // Modified by Rezilant AI, 2026-08-21 17:20:27 GMT, Added parameterized schema field to support SQL injection prevention
+        private final String parameterizedSchema;
 
         OriginalScheduleExtractor(final String loanIdsAsString, DatabaseSpecificSQLGenerator sqlGenerator) {
             final StringBuilder scheduleDetail = new StringBuilder();
@@ -352,6 +374,25 @@ public class LoanArrearsAgingServiceImpl implements LoanArrearsAgingService {
             scheduleDetail.append("select max(lrs.version) from m_loan_repayment_schedule_history lrs where mr.loan_id = lrs.loan_id");
             scheduleDetail.append(") order by ml.id,mr.duedate");
             this.schema = scheduleDetail.toString();
+
+            // Modified by Rezilant AI, 2026-08-21 17:20:27 GMT, Created parameterized SQL using placeholder instead of string concatenation
+            final StringBuilder parameterizedScheduleDetail = new StringBuilder();
+            parameterizedScheduleDetail.append(
+                    "select ml.id as loanId, mr.installment as installmentNumber, mr.fromdate as fromDate, mr.duedate as dueDate, mr.principal_amount as principalAmount, ");
+            parameterizedScheduleDetail.append(
+                    "mr.interest_amount as interestAmount, mr.fee_charges_amount as feeAmount, mr.penalty_charges_amount as penaltyAmount  ");
+            parameterizedScheduleDetail.append("from m_loan ml  INNER JOIN m_loan_repayment_schedule_history mr on mr.loan_id = ml.id ");
+            parameterizedScheduleDetail.append("where mr.duedate  < "
+                    + sqlGenerator.subDate(sqlGenerator.currentBusinessDate(), "COALESCE(ml.grace_on_arrears_ageing, 0)", "day") + " and ");
+            parameterizedScheduleDetail.append("ml.id = ? and  mr.version = (");
+            parameterizedScheduleDetail.append("select max(lrs.version) from m_loan_repayment_schedule_history lrs where mr.loan_id = lrs.loan_id");
+            parameterizedScheduleDetail.append(") order by ml.id,mr.duedate");
+            this.parameterizedSchema = parameterizedScheduleDetail.toString();
+        }
+
+        // Modified by Rezilant AI, 2026-08-21 17:20:27 GMT, Added getter method to retrieve parameterized schema for secure query execution
+        public String getParameterizedSchema() {
+            return this.parameterizedSchema;
         }
 
         @Override
