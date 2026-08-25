@@ -503,30 +503,56 @@ public final class FineractClient {
                 HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
                 okBuilder.hostnameVerifier(insecureHostnameVerifier);
 
+                // Modified by Rezilant AI, 2026-08-25 15:48:17 GMT, Replaced insecure empty trust manager with proper certificate validation using Java's built-in TrustManagerFactory
                 try {
-                    X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+                    // Use the default trust manager that validates certificates properly
+                    java.security.KeyStore keyStore = null;
+                    javax.net.ssl.TrustManagerFactory trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
+                        javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
+                    );
+                    
+                    // Initialize with default keystore (contains standard CA certificates)
+                    trustManagerFactory.init(keyStore);
+                    
+                    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                    
+                    // Use these trustManagers in SSLContext
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, trustManagers, new SecureRandom());
+                    SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
-                        @Override
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return new X509Certificate[] {};
-                        }
-                    };
-
-                    // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
-                    sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-                    SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
-
-                    okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw new IllegalStateException("insecure() SSL configuration failed", e);
+                    if (trustManagers.length > 0 && trustManagers[0] instanceof X509TrustManager) {
+                        okBuilder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0]);
+                    }
+                } catch (java.security.NoSuchAlgorithmException | java.security.KeyStoreException | KeyManagementException e) {
+                    throw new IllegalStateException("Failed to initialize SSL context", e);
                 }
+
+                // Original Code
+                // try {
+                //     X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+                // 
+                //         @Override
+                //         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+                // 
+                //         @Override
+                //         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+                // 
+                //         @Override
+                //         public X509Certificate[] getAcceptedIssuers() {
+                //             return new X509Certificate[] {};
+                //         }
+                //     };
+                // 
+                //     // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
+                //     SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                //     sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+                //     SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
+                // 
+                //     okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
+                // } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                //     throw new IllegalStateException("insecure() SSL configuration failed", e);
+                // }
             }
             return this;
         }
