@@ -144,29 +144,62 @@ public class XBRLResultServiceImpl implements XBRLResultService {
         return accountBalanceMap;
     }
 
-    // Calculate Taxonomy value from expression
+    // Modified by Rezilant AI, 2026-08-25 15:46:46 GMT, Replaced unsafe ScriptEngine.eval() with safe mathematical expression parser to prevent code injection
+    // Calculate Taxonomy value from expression with input validation and safe evaluation
     private BigDecimal processMappingString(Map<String, BigDecimal> accountBalanceMap, String mappingString) {
         final List<String> glCodes = getGLCodes(mappingString);
+        
+        // Validate mappingString contains only allowed characters (numbers, operators, parentheses, braces, whitespace)
+        if (!mappingString.matches("^[0-9+\\-*/().{}\\s]+$")) {
+            throw new IllegalArgumentException("Invalid characters in mapping string");
+        }
+        
         for (final String glcode : glCodes) {
-
-            final BigDecimal balance = accountBalanceMap.get(glcode);
-            mappingString = mappingString.replaceAll("\\{" + glcode + "\\}", balance != null ? balance.toString() : "0");
-        }
-
-        // evaluate the expression
-        float eval = 0f;
-        try {
-            final Number value = (Number) SCRIPT_ENGINE.eval(mappingString);
-            if (value != null) {
-                eval = value.floatValue();
+            // Validate GL code format to prevent injection
+            if (!glcode.matches("^[A-Za-z0-9_-]+$")) {
+                throw new IllegalArgumentException("Invalid GL code format");
             }
-        } catch (final ScriptException e) {
-            log.error("Problem occurred in processMappingString function", e);
-            throw new IllegalArgumentException(e.getMessage(), e);
+            
+            final BigDecimal balance = accountBalanceMap.get(glcode);
+            mappingString = mappingString.replaceAll("\\{" + Pattern.quote(glcode) + "\\}", 
+                balance != null ? balance.toString() : "0");
         }
 
-        return BigDecimal.valueOf(eval);
+        // Use a safe expression evaluator library like exp4j
+        try {
+            net.objecthunter.exp4j.Expression expression = new net.objecthunter.exp4j.ExpressionBuilder(mappingString).build();
+            double result = expression.evaluate();
+            return BigDecimal.valueOf(result);
+        } catch (Exception e) {
+            log.error("Problem occurred in processMappingString function", e);
+            throw new IllegalArgumentException("Invalid mathematical expression", e);
+        }
     }
+
+    // Original Code
+    // // Calculate Taxonomy value from expression
+    // private BigDecimal processMappingString(Map<String, BigDecimal> accountBalanceMap, String mappingString) {
+    //     final List<String> glCodes = getGLCodes(mappingString);
+    //     for (final String glcode : glCodes) {
+    // 
+    //         final BigDecimal balance = accountBalanceMap.get(glcode);
+    //         mappingString = mappingString.replaceAll("\\{" + glcode + "\\}", balance != null ? balance.toString() : "0");
+    //     }
+    // 
+    //     // evaluate the expression
+    //     float eval = 0f;
+    //     try {
+    //         final Number value = (Number) SCRIPT_ENGINE.eval(mappingString);
+    //         if (value != null) {
+    //             eval = value.floatValue();
+    //         }
+    //     } catch (final ScriptException e) {
+    //         log.error("Problem occurred in processMappingString function", e);
+    //         throw new IllegalArgumentException(e.getMessage(), e);
+    //     }
+    // 
+    //     return BigDecimal.valueOf(eval);
+    // }
 
     public List<String> getGLCodes(final String template) {
 
