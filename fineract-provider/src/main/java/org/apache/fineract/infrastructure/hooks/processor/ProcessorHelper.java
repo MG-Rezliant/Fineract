@@ -44,20 +44,21 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    @SuppressWarnings("unused")
-    private static final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[] {};
-        }
-    };
+    // Original Code
+    // @SuppressWarnings("unused")
+    // private static final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+    //
+    //     @Override
+    //     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+    //
+    //     @Override
+    //     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+    //
+    //     @Override
+    //     public X509Certificate[] getAcceptedIssuers() {
+    //         return new X509Certificate[] {};
+    //     }
+    // };
 
     /**
      * Configure HTTP client to be "insecure", as in skipping host SSL certificate verification. While this can be
