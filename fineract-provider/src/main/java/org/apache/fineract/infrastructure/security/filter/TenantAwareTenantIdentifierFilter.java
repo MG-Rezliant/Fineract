@@ -45,6 +45,7 @@ import org.apache.fineract.infrastructure.security.exception.InvalidTenantIdenti
 import org.apache.fineract.infrastructure.security.service.BasicAuthTenantDetailsService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
+import java.util.Set;
 
 /**
  *
@@ -73,6 +74,11 @@ public class TenantAwareTenantIdentifierFilter extends GenericFilterBean {
     private static final String TENANT_ID_REQUEST_HEADER = "Fineract-Platform-TenantId";
     private static final boolean EXCEPTION_IF_HEADER_MISSING = true;
     private static final String API_URI = "/api/v1/";
+    // Modified by Rezilant AI, 2026-08-25 15:47:36 GMT, Added whitelist-based CORS origin validation to prevent unrestricted cross-origin access
+    private static final Set<String> ALLOWED_ORIGINS = Set.of(
+        "https://your-production-domain.com",
+        "https://your-staging-domain.com"
+    );
 
     @Override
     @SuppressFBWarnings("SLF4J_SIGN_ONLY_FORMAT")
@@ -87,10 +93,23 @@ public class TenantAwareTenantIdentifierFilter extends GenericFilterBean {
 
         try {
             ThreadLocalContextUtil.reset();
+            // Modified by Rezilant AI, 2026-08-25 15:47:36 GMT, Replaced wildcard CORS with origin whitelist validation
+            // allows for Cross-Origin Requests (CORs) from trusted domains only
+            String origin = request.getHeader("Origin");
+            if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+            } else {
+                // Set a default secure origin or leave unset
+                response.setHeader("Access-Control-Allow-Origin", "https://your-production-domain.com");
+            }
+            // Original Code
             // allows for Cross-Origin
             // Requests (CORs) to be performed against the platform API.
-            response.setHeader("Access-Control-Allow-Origin", "*"); // NOSONAR
+            // response.setHeader("Access-Control-Allow-Origin", "*"); // NOSONAR
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            // Modified by Rezilant AI, 2026-08-25 15:47:36 GMT, Added max-age header for preflight caching
+            response.setHeader("Access-Control-Max-Age", "3600");
             final String reqHead = request.getHeader("Access-Control-Request-Headers");
 
             if (null != reqHead && !reqHead.isEmpty()) {
