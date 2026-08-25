@@ -518,8 +518,11 @@ public final class FineractClient {
                         }
                     };
 
+                    // Modified by Rezilant AI, 2026-08-25 15:55:51 GMT, Upgraded from insecure "SSL" protocol to TLSv1.2 to mitigate vulnerabilities
+                    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+                    // Original Code
                     // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                    // SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
                     sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
                     SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
 
