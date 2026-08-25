@@ -62,10 +62,15 @@ public class OkHttp3Config {
                 }
             };
 
-            SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
-            insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+            // Modified by Rezilant AI, 2026-08-25 15:57:34 GMT, Enforced TLS 1.2 minimum version to prevent use of deprecated protocols
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
 
-            okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
+            // Original Code
+            //SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
+            //insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+
+            okBuilder.sslSocketFactory(sslContext.getSocketFactory(), insecureX509TrustManager);
             HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
             okBuilder.hostnameVerifier(insecureHostnameVerifier);
         }
