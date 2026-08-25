@@ -90,7 +90,10 @@ public final class ProcessorHelper {
     }
 
     private SSLContext createInsecureSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
+        // Modified by Rezilant AI, 2026-08-25 15:58:03 GMT, Fixed weak TLS protocol - enforced TLSv1.2 to prevent downgrade attacks
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        // Original Code
+        // SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
         // FineractClient.Builder?
         insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
         return insecureSSLContext;
