@@ -155,7 +155,17 @@ public class TemplateMergeService {
 
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(name, password.toCharArray());
+                    // Modified by Rezilant AI, 2026-08-26 01:31:36 GMT, Replace hardcoded credentials with environment variables for secure credential management
+                    String username = System.getenv("EMAIL_USERNAME");
+                    String password = System.getenv("EMAIL_PASSWORD");
+
+                    if (username == null || password == null) {
+                        throw new IllegalStateException("Email credentials not configured. Set EMAIL_USERNAME and EMAIL_PASSWORD environment variables.");
+                    }
+
+                    return new PasswordAuthentication(username, password.toCharArray());
+                    // Original Code
+                    // return new PasswordAuthentication(name, password.toCharArray());
                 }
             });
         }
