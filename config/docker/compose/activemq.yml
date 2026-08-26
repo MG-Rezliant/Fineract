@@ -22,8 +22,8 @@ services:
   activemq:
     image: symptoma/activemq:5.18.3
     ports:
-      - "6161:6161"
-      # Modified by Rezilant AI, 2026-08-26 02:35:03 GMT, Bind port to localhost to prevent external network access
-      - "127.0.0.1:61616:61616"
+      # Modified by Rezilant AI, 2026-08-26 02:38:50 GMT, Bind port to localhost only to prevent external exposure (CWE-200)
+      - "127.0.0.1:6161:6161"
       # Original Code
-      # - "61616:61616"
+      # - "6161:6161"
+      - "61616:61616"
