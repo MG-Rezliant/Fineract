@@ -34,12 +34,8 @@ services:
     container_name: loki
     image: grafana/loki:2.9.2
     command: -config.file=/etc/loki/local-config.yaml
-    # Modified by Rezilant AI, 2026-08-26 02:39:16 GMT, Bind port to localhost to prevent external access
     ports:
-      - "127.0.0.1:3100:3100"
-    # Original Code
-    # ports:
-    #   - "3100:3100"
+      - "3100:3100"
 
   prometheus:
     container_name: prometheus
@@ -55,7 +51,10 @@ services:
     container_name: grafana
     image: grafana/grafana-oss:10.2.0
     ports:
-      - "3000:3000"
+      # Modified by Rezilant AI, 2026-08-26 02:39:40 GMT, Bind port to localhost to prevent unauthorized external access
+      - "127.0.0.1:3000:3000"
+      # Original Code
+      # - "3000:3000"
     volumes:
       - ${PWD}/config/docker/grafana/datasources:/etc/grafana/provisioning/datasources
       - ${PWD}/config/docker/grafana/etc/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yaml
