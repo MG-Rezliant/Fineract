@@ -19,6 +19,7 @@
 
 package org.apache.fineract.infrastructure.core.config;
 
+import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,26 +50,40 @@ public class OkHttp3Config {
                 .writeTimeout(Duration.ofSeconds(fineractProperties.getClientWriteTimeout())); //
 
         if (Boolean.TRUE.equals(fineractProperties.getInsecureHttpClient())) {
-            final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+            // Modified by Rezilant AI, 2026-08-26 01:29:50 GMT, Replaced insecure trust-all TrustManager with system default certificate validation
+            // Uses system default TrustManagerFactory for proper certificate validation
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null); // Uses system default KeyStore
 
-                @Override
-                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
 
-                @Override
-                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+            // Configure OkHttpClient with the secure SSLContext
+            okBuilder.sslSocketFactory(sslContext.getSocketFactory(), 
+                (X509TrustManager) trustManagerFactory.getTrustManagers()[0]);
 
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[] {};
-                }
-            };
+            // Original Code
+            // final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
 
-            SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
-            insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+            //     @Override
+            //     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
 
-            okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
-            HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
-            okBuilder.hostnameVerifier(insecureHostnameVerifier);
+            //     @Override
+            //     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+
+            //     @Override
+            //     public X509Certificate[] getAcceptedIssuers() {
+            //         return new X509Certificate[] {};
+            //     }
+            // };
+
+            // SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
+            // insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+
+            // okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
+            // HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
+            // okBuilder.hostnameVerifier(insecureHostnameVerifier);
         }
 
         return okBuilder.build();
