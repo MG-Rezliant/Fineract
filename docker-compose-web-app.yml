@@ -23,5 +23,9 @@ services:
     image: openmf/web-app:master
     container_name: mifos-web-app
     restart: always
+    # Modified by Rezilant AI, 2026-08-26 04:14:22 GMT, Bind port to localhost only to prevent external exposure
     ports:
-      - 4200:80
+      - "127.0.0.1:4200:80"
+    # Original Code
+    # ports:
+    #   - 4200:80
