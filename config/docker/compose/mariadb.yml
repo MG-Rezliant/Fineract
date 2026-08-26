@@ -29,5 +29,9 @@ services:
       test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
       timeout: 10s
       retries: 10
+    # Modified by Rezilant AI, 2026-08-26 02:34:04 GMT, Bind MariaDB port to localhost to prevent unauthorized external access
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
+    # Original Code
+    # ports:
+    #   - "3306:3306"
