@@ -503,30 +503,45 @@ public final class FineractClient {
                 HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
                 okBuilder.hostnameVerifier(insecureHostnameVerifier);
 
+                // Modified by Rezilant AI, 2026-08-26 01:29:50 GMT, Replaced insecure empty trust manager with secure TrustManagerFactory implementation
                 try {
-                    X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-                        @Override
-                        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                        @Override
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return new X509Certificate[] {};
-                        }
-                    };
-
-                    // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
-                    sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-                    SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
-
-                    okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                    javax.net.ssl.TrustManagerFactory trustManagerFactory = javax.net.ssl.TrustManagerFactory.getInstance(
+                        javax.net.ssl.TrustManagerFactory.getDefaultAlgorithm()
+                    );
+                    trustManagerFactory.init((java.security.KeyStore) null); // Uses system's default trusted certificates
+                    
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
+                    
+                    okBuilder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagerFactory.getTrustManagers()[0]);
+                } catch (NoSuchAlgorithmException | KeyManagementException | java.security.KeyStoreException e) {
                     throw new IllegalStateException("insecure() SSL configuration failed", e);
                 }
+                // Original Code
+                // try {
+                //     X509TrustManager insecureX509TrustManager = new X509TrustManager() {
+
+                //         @Override
+                //         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+
+                //         @Override
+                //         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
+
+                //         @Override
+                //         public X509Certificate[] getAcceptedIssuers() {
+                //             return new X509Certificate[] {};
+                //         }
+                //     };
+
+                //     // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
+                //     SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                //     sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
+                //     SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
+
+                //     okBuilder.sslSocketFactory(insecureSslSocketFactory, insecureX509TrustManager);
+                // } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                //     throw new IllegalStateException("insecure() SSL configuration failed", e);
+                // }
             }
             return this;
         }
