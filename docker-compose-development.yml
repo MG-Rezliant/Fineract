@@ -71,7 +71,10 @@ services:
       service: fineract
     ports:
       - "8443:8443"
-      - "5000:5000"
+      # Modified by Rezilant AI, 2026-08-26 02:38:53 GMT, Bind port 5000 to localhost only to prevent unauthorized external access
+      - "127.0.0.1:5000:5000"
+      # Original Code
+      # - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
