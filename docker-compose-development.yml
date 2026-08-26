@@ -69,9 +69,14 @@ services:
     extends:
       file: ./config/docker/compose/fineract.yml
       service: fineract
+    # Modified by Rezilant AI, 2026-08-26 01:33:21 GMT, Bind service port to localhost only to prevent external exposure
     ports:
-      - "8443:8443"
-      - "5000:5000"
+      - "127.0.0.1:8443:8443"
+      - "127.0.0.1:5000:5000"
+    # Original Code
+    # ports:
+    #   - "8443:8443"
+    #   - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
