@@ -44,9 +44,13 @@ public class PostgreSQLQueryService implements DatabaseQueryService {
     @Override
     public boolean isTablePresent(DataSource dataSource, String tableName) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        Integer result = jdbcTemplate.queryForObject(
-                "SELECT COUNT(table_name) FROM information_schema.tables " + "WHERE table_schema = 'public' AND table_name = ?",
-                Integer.class, tableName);
+        // Modified by Rezilant AI, 2026-08-26 01:31:45 GMT, Separated SQL string to clarify parameterized query usage
+        String sql = "SELECT COUNT(table_name) FROM information_schema.tables " + "WHERE table_schema = 'public' AND table_name = ?";
+        Integer result = jdbcTemplate.queryForObject(sql, Integer.class, tableName);
+        // Original Code
+        // Integer result = jdbcTemplate.queryForObject(
+        //         "SELECT COUNT(table_name) FROM information_schema.tables " + "WHERE table_schema = 'public' AND table_name = ?",
+        //         Integer.class, tableName);
         return Objects.equals(result, 1);
     }
 
