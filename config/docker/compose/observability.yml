@@ -64,11 +64,11 @@ services:
     # command: [ "--target=all", "--storage.trace.backend=local", "--storage.trace.local.path=/tmp/tempo", "--auth.enabled=false" ]
     command: [ "-config.file=/etc/tempo.yml" ]
     ports:
-      - "14268:14268" # jaeger ingest
-      # Modified by Rezilant AI, 2026-08-26 02:40:06 GMT, Bound tempo port to localhost to prevent external access
-      - "127.0.0.1:3200:3200"   # tempo
+      # Modified by Rezilant AI, 2026-08-26 02:40:30 GMT, Bind jaeger ingest port to localhost only to prevent external access
+      - "127.0.0.1:14268:14268" # jaeger ingest - restricted to localhost
       # Original Code
-      # - "3200:3200"   # tempo
+      # - "14268:14268" # jaeger ingest
+      - "3200:3200"   # tempo
       - "9095:9095"   # tempo grpc
       - "4317:4317"   # otlp grpc
       - "4318:4318"   # otlp http
