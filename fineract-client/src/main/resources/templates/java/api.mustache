@@ -50,10 +50,10 @@ public interface {{classname}} {
     {{/isDeprecated}}
     {{#externalDocs}}
         * {{description}}
-        {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
-        * @see <a href="{{{url}}}">{{summary}} Documentation</a>
-        {{! Original Code }}
-        {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
+        * Modified by Rezilant AI, 2026-08-26 01:33:16 GMT, Prepended forward slash to prevent javascript: URI injection
+        * @see <a href="/{{url}}">{{summary}} Documentation</a>
+        * Original Code
+        * @see <a href="{{url}}">{{summary}} Documentation</a>
     {{/externalDocs}}
     */
     {{#isDeprecated}}
@@ -94,10 +94,10 @@ public interface {{classname}} {
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
-            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
-            {{! Original Code }}
-            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
+            * Modified by Rezilant AI, 2026-08-26 01:33:16 GMT, Prepended forward slash to prevent javascript: URI injection
+            * @see <a href="/{{url}}">{{summary}} Documentation</a>
+            * Original Code
+            * @see <a href="{{url}}">{{summary}} Documentation</a>
     {{/externalDocs}}
         */
     {{#isDeprecated}}
@@ -137,10 +137,10 @@ public interface {{classname}} {
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
-            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
-            {{! Original Code }}
-            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
+            * Modified by Rezilant AI, 2026-08-26 01:33:16 GMT, Prepended forward slash to prevent javascript: URI injection
+            * @see <a href="/{{url}}">{{summary}} Documentation</a>
+            * Original Code
+            * @see <a href="{{url}}">{{summary}} Documentation</a>
     {{/externalDocs}}
         */
     {{#isDeprecated}}
@@ -181,10 +181,10 @@ public interface {{classname}} {
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
-            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
-            {{! Original Code }}
-            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
+            * Modified by Rezilant AI, 2026-08-26 01:33:16 GMT, Prepended forward slash to prevent javascript: URI injection
+            * @see <a href="/{{url}}">{{summary}} Documentation</a>
+            * Original Code
+            * @see <a href="{{url}}">{{summary}} Documentation</a>
     {{/externalDocs}}
         */
     {{#isDeprecated}}
