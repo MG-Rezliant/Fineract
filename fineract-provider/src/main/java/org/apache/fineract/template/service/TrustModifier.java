@@ -60,7 +60,10 @@ public final class TrustModifier {
             throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
 
         if (factory == null) {
-            final SSLContext ctx = SSLContext.getInstance("TLS");
+            // Modified by Rezilant AI, 2026-08-26 01:33:10 GMT, Replace weak TLS context with TLSv1.2 to prevent fallback to deprecated SSL/TLS versions
+            final SSLContext ctx = SSLContext.getInstance("TLSv1.2");
+            // Original Code
+            // final SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(null, new TrustManager[] { new AlwaysTrustManager() }, null);
             factory = ctx.getSocketFactory();
         }
