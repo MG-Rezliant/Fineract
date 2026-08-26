@@ -69,7 +69,10 @@ services:
       - "9095:9095"   # tempo grpc
       - "4317:4317"   # otlp grpc
       - "4318:4318"   # otlp http
-      - "9411:9411"   # zipkin
+      # Modified by Rezilant AI, 2026-08-26 04:14:13 GMT, Bind Zipkin port to localhost only to prevent external access
+      - "127.0.0.1:9411:9411"   # zipkin
+      # Original Code
+      # - "9411:9411"   # zipkin
     volumes:
       - ${PWD}/config/docker/tempo/etc/tempo.yml:/etc/tempo.yml
       - /tmp/tempo:/tmp/tempo
