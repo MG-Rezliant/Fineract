@@ -51,8 +51,12 @@ services:
     deploy:
       mode: replicated
       replicas: 2
+    # Modified by Rezilant AI, 2026-08-26 02:34:33 GMT, Bind port to localhost to prevent external network exposure
     ports:
-      - "8444-8445:8443"
+      - "127.0.0.1:8444-8445:8443"
+    # Original Code
+    #ports:
+    #  - "8444-8445:8443"
     depends_on:
       fineract-manager:
         condition: service_healthy
