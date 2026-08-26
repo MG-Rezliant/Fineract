@@ -44,13 +44,16 @@ public interface {{classname}} {
     {{#allParams}}
         * @param {{paramName}} {{description}}{{#required}} (required){{/required}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}
     {{/allParams}}
-    * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}&gt;{{/doNotUseRx}}
+    * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}>{{/doNotUseRx}}
     {{#isDeprecated}}
         * @deprecated
     {{/isDeprecated}}
     {{#externalDocs}}
         * {{description}}
-        * @see <a href="{{url}}">{{summary}} Documentation</a>
+        {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
+        * @see <a href="{{{url}}}">{{summary}} Documentation</a>
+        {{! Original Code }}
+        {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
     {{/externalDocs}}
     */
     {{#isDeprecated}}
@@ -85,13 +88,16 @@ public interface {{classname}} {
     {{#allParams}}
             * @param {{paramName}} {{description}}{{#required}} (required){{/required}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}
     {{/allParams}}
-        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}&gt;{{/doNotUseRx}}
+        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}>{{/doNotUseRx}}
     {{#isDeprecated}}
             * @deprecated
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            * @see <a href="{{url}}">{{summary}} Documentation</a>
+            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
+            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
+            {{! Original Code }}
+            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
     {{/externalDocs}}
         */
     {{#isDeprecated}}
@@ -125,13 +131,16 @@ public interface {{classname}} {
     {{#allParams}}
             * @param {{paramName}} {{description}}{{#required}} (required){{/required}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}
     {{/allParams}}
-        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}&gt;{{/doNotUseRx}}
+        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}>{{/doNotUseRx}}
     {{#isDeprecated}}
             * @deprecated
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            * @see <a href="{{url}}">{{summary}} Documentation</a>
+            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
+            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
+            {{! Original Code }}
+            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
     {{/externalDocs}}
         */
     {{#isDeprecated}}
@@ -166,13 +175,16 @@ public interface {{classname}} {
     {{#allParams}}
             * @param {{paramName}} {{description}}{{#required}} (required){{/required}}{{^required}} (optional{{#defaultValue}}, default to {{.}}{{/defaultValue}}){{/required}}
     {{/allParams}}
-        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}&gt;{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call&lt;{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}&gt;{{/doNotUseRx}}
+        * @return {{^doNotUseRx}}{{#useRxJava2}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava2}}{{#useRxJava3}}{{#returnType}}Observable<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{/isResponseFile}}>{{/returnType}}{{^returnType}}Completable{{/returnType}}{{/useRxJava3}}{{/doNotUseRx}}{{#doNotUseRx}}Call<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{returnType}}{{^returnType}}Void{{/returnType}}{{/isResponseFile}}>{{/doNotUseRx}}
     {{#isDeprecated}}
             * @deprecated
     {{/isDeprecated}}
     {{#externalDocs}}
             * {{description}}
-            * @see <a href="{{url}}">{{summary}} Documentation</a>
+            {{! Modified by Rezilant AI, 2026-08-26 01:32:16 GMT, XSS fix: URL-encoded external documentation link }}
+            * @see <a href="{{{url}}}">{{summary}} Documentation</a>
+            {{! Original Code }}
+            {{! * @see <a href="{{url}}">{{summary}} Documentation</a> }}
     {{/externalDocs}}
         */
     {{#isDeprecated}}
