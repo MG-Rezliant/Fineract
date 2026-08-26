@@ -77,13 +77,15 @@ public final class TrustModifier {
 
     private static final class AlwaysTrustManager implements X509TrustManager {
 
-        // Modified by Rezilant AI, 2026-08-25 15:53:59 GMT, Replaced insecure empty trust manager with proper certificate validation using TrustManagerFactory
+        // Modified by Rezilant AI, 2026-08-26 01:31:26 GMT, Replaced empty trust manager with proper certificate validation to prevent MITM attacks
         // Original Code
         // @Override
         // public void checkClientTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {}// NOSONAR
 
-        @Override
-        public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {}// NOSONAR
+        // Modified by Rezilant AI, 2026-08-26 01:31:26 GMT, Replaced empty trust manager with proper certificate validation to prevent MITM attacks
+        // Original Code
+        // @Override
+        // public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {}// NOSONAR
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
