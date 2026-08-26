@@ -30,5 +30,9 @@ services:
       test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
       timeout: 10s
       retries: 10
+    # Modified by Rezilant AI, 2026-08-26 02:34:26 GMT, Bind PostgreSQL port to localhost only to prevent unauthorized external access
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
+    # Original Code
+    # ports:
+    #   - "5432:5432"
