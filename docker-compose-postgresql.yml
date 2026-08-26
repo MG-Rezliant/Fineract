@@ -30,7 +30,10 @@ services:
       file: ./config/docker/compose/fineract.yml
       service: fineract
     ports:
-      - "8443:8443"
+      # Modified by Rezilant AI, 2026-08-26 02:33:17 GMT, Bind service port to localhost only to prevent external access
+      - "127.0.0.1:8443:8443"
+      # Original Code
+      # - "8443:8443"
     depends_on:
       db:
         condition: service_healthy
