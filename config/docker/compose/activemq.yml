@@ -21,6 +21,11 @@ version: "3.8"
 services:
   activemq:
     image: symptoma/activemq:5.18.3
+    # Modified by Rezliant AI, 2026-09-10 20:53:26 GMT, bind ActiveMQ ports to localhost
     ports:
-      - "6161:6161"
-      - "61616:61616"
+      - "127.0.0.1:6161:6161"
+      - "127.0.0.1:61616:61616"
+    # Original Code
+    # ports:
+    #   - "6161:6161"
+    #   - "61616:61616"
