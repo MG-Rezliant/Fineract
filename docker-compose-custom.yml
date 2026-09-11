@@ -29,7 +29,10 @@ services:
       file: ./config/docker/compose/fineract-custom.yml
       service: fineract
     ports:
-      - "8443:8443"
+      # Modified by Rezliant AI, 2026-09-11 13:41:24 GMT, bind to localhost to prevent unrestricted network access
+      - "127.0.0.1:8443:8443"
+      # Original Code
+      # - "8443:8443"
     depends_on:
       db:
         condition: service_healthy
