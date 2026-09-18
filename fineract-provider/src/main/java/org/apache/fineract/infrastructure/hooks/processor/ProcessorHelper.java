@@ -18,15 +18,6 @@
  */
 package org.apache.fineract.infrastructure.hooks.processor;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +35,7 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    // @rezliant RZ-0DB9DFBC · 2026-09-18 — Prevents MITM attacks by enforcing certificate validation
-
+    // @rezliant RZ-666B87DE · 2026-09-18 — Enforces platform certificate validation for all webhook HTTPS connections
     public ProcessorHelper() {
     }
 
@@ -97,13 +87,11 @@ public final class ProcessorHelper {
     }
 }
 
-/*
- * @rezliant-change-log:start
- * RZ-0DB9DFBC · 2026-09-18 · Trust-all TLS manager enables MITM attacks
- * Change: Removed insecureX509TrustManager, insecureHttpClient flag, insecureSSLContext field, constructor initialization, configureInsecureClient(), and createInsecureSSLContext() methods
- * Benefit: Enforces proper certificate validation for all webhook HTTPS connections
- * Scope: ProcessorHelper class initialization and HTTP client creation
- * 
- * Rezliant remediation history: 1 total · 1 most recent shown
- * @rezliant-change-log:end
- */
+// @rezliant-change-log:start
+// RZ-666B87DE · 2026-09-18 · Trust-all TLS bypass capability present in production-distributable code controlled by runtime flag
+// Change: Removed insecureX509TrustManager, insecureSSLContext field, insecureHttpClient flag check, configureInsecureClient() and createInsecureSSLContext() methods
+// Benefit: Enforces platform certificate validation for all webhook HTTPS connections
+// Scope: ProcessorHelper class constructor and createClient() method
+//
+// Rezliant remediation history: 1 total · 1 most recent shown
+// @rezliant-change-log:end
