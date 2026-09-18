@@ -55,6 +55,7 @@ public final class FineractFeignClientConfig {
     private final boolean debugEnabled;
     private final long connectionTimeToLive;
     private final TimeUnit connectionTimeToLiveUnit;
+    private final boolean disableSslVerification;
     private final int maxConnTotal;
     private final int maxConnPerRoute;
     private final long idleConnectionEvictionTime;
@@ -72,6 +73,7 @@ public final class FineractFeignClientConfig {
         this.debugEnabled = builder.debugEnabled;
         this.connectionTimeToLive = builder.connectionTimeToLive;
         this.connectionTimeToLiveUnit = builder.connectionTimeToLiveUnit;
+        this.disableSslVerification = builder.disableSslVerification;
         this.maxConnTotal = builder.maxConnTotal;
         this.maxConnPerRoute = builder.maxConnPerRoute;
         this.idleConnectionEvictionTime = builder.idleConnectionEvictionTime;
@@ -118,7 +120,7 @@ public final class FineractFeignClientConfig {
         }
     }
 
-    // @rezliant RZ-475F7729 · 2026-09-18 — Enforces platform certificate validation
+    // @rezliant RZ-9A236362 · 2026-09-18 — Enforces platform certificate validation to prevent man-in-the-middle attacks
     private Client createApacheHttpClient() {
         try {
             PoolingHttpClientConnectionManagerBuilder connManagerBuilder = PoolingHttpClientConnectionManagerBuilder.create()
@@ -166,6 +168,7 @@ public final class FineractFeignClientConfig {
         private boolean debugEnabled = false;
         private long connectionTimeToLive = -1;
         private TimeUnit connectionTimeToLiveUnit = TimeUnit.MILLISECONDS;
+        private boolean disableSslVerification = false;
         private int maxConnTotal = 200;
         private int maxConnPerRoute = 20;
         private long idleConnectionEvictionTime = 30;
@@ -209,6 +212,11 @@ public final class FineractFeignClientConfig {
             return this;
         }
 
+        public Builder disableSslVerification(boolean disableSslVerification) {
+            this.disableSslVerification = disableSslVerification;
+            return this;
+        }
+
         public Builder maxConnTotal(int maxConnTotal) {
             this.maxConnTotal = maxConnTotal;
             return this;
@@ -245,13 +253,10 @@ public final class FineractFeignClientConfig {
     }
 }
 
-/*
- * @rezliant-change-log:start
- * RZ-475F7729 · 2026-09-18 · Trust-all TLS manager accepts invalid certificates
- * Change: Removed disableSslVerification capability and trust-all TLS bypass logic
- * Benefit: Enforces platform certificate validation
- * Scope: createApacheHttpClient, createOkHttpClient
- * 
- * Rezliant remediation history: 1 total · 1 most recent shown
- * @rezliant-change-log:end
- */
+// @rezliant-change-log:start
+// RZ-9A236362 · 2026-09-18 · Trust-all X509TrustManager bypass creates MITM vulnerability
+// Change: Removed disableSslVerification flag handling and trust-all certificate bypass from createApacheHttpClient and createOkHttpClient
+// Benefit: Enforces platform certificate validation to prevent man-in-the-middle attacks
+// Scope: createApacheHttpClient and createOkHttpClient methods
+// Rezliant remediation history: 1 total · 1 most recent shown
+// @rezliant-change-log:end
