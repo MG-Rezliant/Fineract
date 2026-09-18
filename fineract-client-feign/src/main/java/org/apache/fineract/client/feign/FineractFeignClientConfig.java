@@ -27,19 +27,13 @@ import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.slf4j.Slf4jLogger;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import org.apache.fineract.client.feign.support.ApiResponseDecoder;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
@@ -126,16 +120,11 @@ public final class FineractFeignClientConfig {
         }
     }
 
+    // @rezliant RZ-9A236362 · 2026-09-18 — Enforces platform certificate validation to prevent man-in-the-middle attacks
     private Client createApacheHttpClient() {
         try {
             PoolingHttpClientConnectionManagerBuilder connManagerBuilder = PoolingHttpClientConnectionManagerBuilder.create()
                     .setMaxConnTotal(maxConnTotal).setMaxConnPerRoute(maxConnPerRoute);
-
-            if (disableSslVerification) {
-                SSLContext sslContext = createTrustAllSslContext();
-                SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create().setSslContext(sslContext).build();
-                connManagerBuilder.setSSLSocketFactory(sslSocketFactory);
-            }
 
             if (connectionTimeToLive > 0) {
                 connManagerBuilder.setConnectionTimeToLive(TimeValue.of(connectionTimeToLive, connectionTimeToLiveUnit));
@@ -162,40 +151,10 @@ public final class FineractFeignClientConfig {
                     .connectionPool(new okhttp3.ConnectionPool(maxConnTotal, connectionTimeToLive > 0 ? connectionTimeToLive : 5,
                             connectionTimeToLive > 0 ? connectionTimeToLiveUnit : TimeUnit.MINUTES));
 
-            if (disableSslVerification) {
-                SSLContext sslContext = createTrustAllSslContext();
-                builder.sslSocketFactory(sslContext.getSocketFactory(), createTrustAllManager());
-                builder.hostnameVerifier((hostname, session) -> true);
-            }
-
             return new feign.okhttp.OkHttpClient(builder.build());
         } catch (Exception e) {
             throw new RuntimeException("Failed to create OkHttp client", e);
         }
-    }
-
-    private X509TrustManager createTrustAllManager() {
-        return new X509TrustManager() {
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-
-            @Override
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-        };
-    }
-
-    private SSLContext createTrustAllSslContext() throws Exception {
-        TrustManager[] trustAllCerts = new TrustManager[] { createTrustAllManager() };
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        return sslContext;
     }
 
     public static class Builder {
@@ -293,3 +252,11 @@ public final class FineractFeignClientConfig {
         }
     }
 }
+
+// @rezliant-change-log:start
+// RZ-9A236362 · 2026-09-18 · Trust-all X509TrustManager bypass creates MITM vulnerability
+// Change: Removed disableSslVerification flag handling and trust-all certificate bypass from createApacheHttpClient and createOkHttpClient
+// Benefit: Enforces platform certificate validation to prevent man-in-the-middle attacks
+// Scope: createApacheHttpClient and createOkHttpClient methods
+// Rezliant remediation history: 1 total · 1 most recent shown
+// @rezliant-change-log:end
