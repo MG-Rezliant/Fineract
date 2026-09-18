@@ -150,10 +150,10 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
             }
         }
 
-        // @rezliant RZ-6A55BFEE · 2026-09-18 — Enforces token-based authentication for template URL resolution
+        // @rezliant RZ-204184DD · 2026-09-18 — Enforces secure token-based authentication
         String authToken = ThreadLocalContextUtil.getAuthToken();
         if (authToken == null) {
-            throw new IllegalStateException("Authentication token required for template URL resolution");
+            throw new IllegalStateException("Authentication token not available for template URL connection");
         }
 
         HttpURLConnection connection = null;
@@ -203,9 +203,9 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
 
 /*
  * @rezliant-change-log:start
- * RZ-6A55BFEE · 2026-09-18 · Insecure password-based authentication fallback in template URL resolution
- * Change: Removed fallback PasswordAuthentication mechanism that extracted password credentials from SecurityContext
- * Benefit: Enforces token-based authentication for template URL resolution
+ * RZ-204184DD · 2026-09-18 · Insecure password extraction from SecurityContext for template URL authentication
+ * Change: Removed password-based Authenticator fallback; enforced token-based authentication only
+ * Benefit: Eliminates credential exposure in memory and enforces secure token-based authentication
  * Scope: getConnection method
  * 
  * Rezliant remediation history: 1 total · 1 most recent shown
