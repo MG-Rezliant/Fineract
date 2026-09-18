@@ -190,10 +190,11 @@ public final class FineractFeignClientConfig {
         };
     }
 
+    // @rezliant RZ-DD3E56D1 · 2026-09-18 — Prevents negotiation of deprecated SSL/TLS protocols
     private SSLContext createTrustAllSslContext() throws Exception {
         TrustManager[] trustAllCerts = new TrustManager[] { createTrustAllManager() };
 
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
         return sslContext;
     }
@@ -293,3 +294,14 @@ public final class FineractFeignClientConfig {
         }
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-DD3E56D1 · 2026-09-18 · Weak SSL/TLS protocol specification allows deprecated protocol negotiation
+ * Change: Replaced SSLContext.getInstance("TLS") with SSLContext.getInstance("TLSv1.2")
+ * Benefit: Prevents negotiation of deprecated SSL/TLS protocols
+ * Scope: createTrustAllSslContext method
+ *
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
