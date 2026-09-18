@@ -18,74 +18,23 @@
  */
 package org.apache.fineract.template.service;
 
-import java.net.HttpURLConnection;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
+// @rezliant RZ-9FE01738 · 2026-09-18 — Prevents trust-all TLS bypass and MITM attacks
+@Deprecated(forRemoval = true)
 @SuppressWarnings("unused")
 public final class TrustModifier {
 
     private TrustModifier() {
 
     }
-
-    private static final TrustingHostnameVerifier TRUSTING_HOSTNAME_VERIFIER = new TrustingHostnameVerifier();
-    private static SSLSocketFactory factory;
-
-    /**
-     * Call this with any HttpURLConnection, and it will modify the trust settings if it is an HTTPS connection.
-     */
-    public static void relaxHostChecking(final HttpURLConnection conn)
-            throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-
-        if (conn instanceof HttpsURLConnection) {
-            final HttpsURLConnection httpsConnection = (HttpsURLConnection) conn;
-            final SSLSocketFactory factory = prepFactory(httpsConnection);
-            httpsConnection.setSSLSocketFactory(factory);
-            httpsConnection.setHostnameVerifier(TRUSTING_HOSTNAME_VERIFIER);
-        }
-    }
-
-    static synchronized SSLSocketFactory prepFactory(final HttpsURLConnection httpsConnection)
-            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-
-        if (factory == null) {
-            final SSLContext ctx = SSLContext.getInstance("TLS");
-            ctx.init(null, new TrustManager[] { new AlwaysTrustManager() }, null);
-            factory = ctx.getSocketFactory();
-        }
-        return factory;
-    }
-
-    private static final class TrustingHostnameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(final String hostname, final SSLSession session) {
-            return true;// NOSONAR
-        }
-    }
-
-    private static final class AlwaysTrustManager implements X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {}// NOSONAR
-
-        @Override
-        public void checkServerTrusted(final X509Certificate[] arg0, final String arg1) throws CertificateException {}// NOSONAR
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-    }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-9FE01738 · 2026-09-18 · Trust-all TLS bypass in AlwaysTrustManager.checkServerTrusted()
+ * Change: Removed relaxHostChecking(), prepFactory(), AlwaysTrustManager, TrustingHostnameVerifier, and related fields
+ * Benefit: Prevents trust-all TLS bypass and MITM attacks
+ * Scope: TrustModifier class
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
