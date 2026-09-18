@@ -89,9 +89,9 @@ public final class ProcessorHelper {
         okBuilder.hostnameVerifier(insecureHostnameVerifier);
     }
 
+    // @rezliant RZ-F47CAE33 · 2026-09-18 — Prevents negotiation of deprecated TLS 1.0/1.1 protocols
     private SSLContext createInsecureSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
-        // FineractClient.Builder?
+        SSLContext insecureSSLContext = SSLContext.getInstance("TLSv1.2");
         insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
         return insecureSSLContext;
     }
@@ -139,3 +139,14 @@ public final class ProcessorHelper {
         };
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-F47CAE33 · 2026-09-18 · Weak TLS protocol negotiation in insecure SSL context
+ * Change: Replaced SSLContext.getInstance("TLS") with getInstance("TLSv1.2")
+ * Benefit: Prevents negotiation of deprecated TLS 1.0/1.1 protocols
+ * Scope: createInsecureSSLContext() method
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
