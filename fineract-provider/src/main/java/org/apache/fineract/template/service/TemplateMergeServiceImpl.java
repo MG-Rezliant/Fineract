@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.Authenticator;
 import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
@@ -49,7 +47,6 @@ import org.apache.fineract.template.data.TemplateMapperData;
 import org.apache.fineract.template.domain.TemplateFunctions;
 import org.apache.fineract.template.exception.TemplateForbiddenException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -153,26 +150,16 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
             }
         }
 
+        // @rezliant RZ-B7DE89A0 · 2026-09-18 — Prevents credential extraction from SecurityContext
         String authToken = ThreadLocalContextUtil.getAuthToken();
         if (authToken == null) {
-            final String name = SecurityContextHolder.getContext().getAuthentication().getName();
-            final String password = SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
-
-            Authenticator.setDefault(new Authenticator() {
-
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(name, password.toCharArray());
-                }
-            });
+            throw new IllegalStateException("Authentication token required for template mapper HTTP requests");
         }
 
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
-            if (authToken != null) {
-                connection.setRequestProperty("Authorization", "Basic " + authToken);// NOSONAR
-            }
+            connection.setRequestProperty("Authorization", "Basic " + authToken);// NOSONAR
             TrustModifier.relaxHostChecking(connection);
 
             connection.setDoInput(true);
@@ -213,3 +200,14 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
         }
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-B7DE89A0 · 2026-09-18 · Password-based authentication fallback uses credentials from SecurityContext
+ * Change: Removed Authenticator.setDefault block containing password extraction; replaced with exception throw when authToken unavailable
+ * Benefit: Prevents credential extraction from SecurityContext
+ * Scope: getConnection method
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
