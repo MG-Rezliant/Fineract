@@ -150,10 +150,10 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
             }
         }
 
-        // @rezliant RZ-B7DE89A0 · 2026-09-18 — Prevents credential extraction from SecurityContext
+        // @rezliant RZ-6A55BFEE · 2026-09-18 — Enforces token-based authentication for template URL resolution
         String authToken = ThreadLocalContextUtil.getAuthToken();
         if (authToken == null) {
-            throw new IllegalStateException("Authentication token required for template mapper HTTP requests");
+            throw new IllegalStateException("Authentication token required for template URL resolution");
         }
 
         HttpURLConnection connection = null;
@@ -203,9 +203,9 @@ public class TemplateMergeServiceImpl implements TemplateMergeService {
 
 /*
  * @rezliant-change-log:start
- * RZ-B7DE89A0 · 2026-09-18 · Password-based authentication fallback uses credentials from SecurityContext
- * Change: Removed Authenticator.setDefault block containing password extraction; replaced with exception throw when authToken unavailable
- * Benefit: Prevents credential extraction from SecurityContext
+ * RZ-6A55BFEE · 2026-09-18 · Insecure password-based authentication fallback in template URL resolution
+ * Change: Removed fallback PasswordAuthentication mechanism that extracted password credentials from SecurityContext
+ * Benefit: Enforces token-based authentication for template URL resolution
  * Scope: getConnection method
  * 
  * Rezliant remediation history: 1 total · 1 most recent shown
