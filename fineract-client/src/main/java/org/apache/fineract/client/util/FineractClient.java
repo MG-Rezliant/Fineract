@@ -549,8 +549,8 @@ public final class FineractClient {
                         }
                     };
 
-                    // TODO "SSL" or "TLS" as in hooks.processor.ProcessorHelper?
-                    SSLContext sslContext = SSLContext.getInstance("SSL");// NOSONAR
+                    // @rezliant RZ-A54F6635 · 2026-09-18 — Prevents TLS protocol downgrade attacks
+                    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");// NOSONAR
                     sslContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
                     SSLSocketFactory insecureSslSocketFactory = sslContext.getSocketFactory();
 
@@ -616,3 +616,14 @@ public final class FineractClient {
         }
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-A54F6635 · 2026-09-18 · Deprecated SSL protocol replaced with TLSv1.2
+ * Change: Replaced SSLContext.getInstance("SSL") with SSLContext.getInstance("TLSv1.2")
+ * Benefit: Prevents TLS protocol downgrade attacks
+ * Scope: Builder.insecure() method
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
