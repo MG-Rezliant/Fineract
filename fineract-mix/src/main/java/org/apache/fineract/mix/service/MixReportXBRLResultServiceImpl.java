@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.mix.data.MixReportXBRLData;
 import org.apache.fineract.mix.data.MixTaxonomyData;
@@ -43,8 +40,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class MixReportXBRLResultServiceImpl implements MixReportXBRLResultService {
-
-    private static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("JavaScript");
 
     private final MixTaxonomyMappingReadService readTaxonomyMappingService;
     private final MixTaxonomyReadService readTaxonomyService;
@@ -139,7 +134,7 @@ public class MixReportXBRLResultServiceImpl implements MixReportXBRLResultServic
         return accountBalanceMap;
     }
 
-    // Calculate Taxonomy value from expression
+    // @rezliant RZ-7DB1613F · 2026-09-18 — Prevents code injection through expression evaluation
     private BigDecimal processMappingString(Map<String, BigDecimal> accountBalanceMap, String mappingString) {
         final List<String> glCodes = getGLCodes(mappingString);
         for (final String glcode : glCodes) {
@@ -148,20 +143,84 @@ public class MixReportXBRLResultServiceImpl implements MixReportXBRLResultServic
             mappingString = mappingString.replaceAll("\\{" + glcode + "\\}", balance != null ? balance.toString() : "0");
         }
 
-        // evaluate the expression
-        float eval = 0f;
+        // evaluate the expression using safe arithmetic evaluation
         try {
-            // TODO: this doesn't work anymore in modern JVMs!!!!
-            final Number value = (Number) SCRIPT_ENGINE.eval(mappingString);
-            if (value != null) {
-                eval = value.floatValue();
-            }
-        } catch (final ScriptException e) {
+            return evaluateArithmeticExpression(mappingString);
+        } catch (final Exception e) {
             log.error("Problem occurred in processMappingString function", e);
             throw new IllegalArgumentException(e.getMessage(), e);
         }
+    }
 
-        return BigDecimal.valueOf(eval);
+    private BigDecimal evaluateArithmeticExpression(String expression) {
+        // Remove whitespace
+        expression = expression.replaceAll("\\s+", "");
+        
+        // Validate expression contains only numbers, decimal points, and basic operators
+        if (!expression.matches("^[0-9+\\-*/().]+$")) {
+            throw new IllegalArgumentException("Invalid expression: contains unauthorized characters");
+        }
+        
+        return new Object() {
+            int pos = -1, ch;
+
+            void nextChar() {
+                ch = (++pos < expression.length()) ? expression.charAt(pos) : -1;
+            }
+
+            boolean eat(int charToEat) {
+                while (ch == ' ') nextChar();
+                if (ch == charToEat) {
+                    nextChar();
+                    return true;
+                }
+                return false;
+            }
+
+            BigDecimal parse() {
+                nextChar();
+                BigDecimal x = parseExpression();
+                if (pos < expression.length()) throw new IllegalArgumentException("Unexpected: " + (char)ch);
+                return x;
+            }
+
+            BigDecimal parseExpression() {
+                BigDecimal x = parseTerm();
+                for (;;) {
+                    if (eat('+')) x = x.add(parseTerm());
+                    else if (eat('-')) x = x.subtract(parseTerm());
+                    else return x;
+                }
+            }
+
+            BigDecimal parseTerm() {
+                BigDecimal x = parseFactor();
+                for (;;) {
+                    if (eat('*')) x = x.multiply(parseFactor());
+                    else if (eat('/')) x = x.divide(parseFactor(), 10, BigDecimal.ROUND_HALF_UP);
+                    else return x;
+                }
+            }
+
+            BigDecimal parseFactor() {
+                if (eat('+')) return parseFactor();
+                if (eat('-')) return parseFactor().negate();
+
+                BigDecimal x;
+                int startPos = this.pos;
+                if (eat('(')) {
+                    x = parseExpression();
+                    eat(')');
+                } else if ((ch >= '0' && ch <= '9') || ch == '.') {
+                    while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
+                    x = new BigDecimal(expression.substring(startPos, this.pos));
+                } else {
+                    throw new IllegalArgumentException("Unexpected: " + (char)ch);
+                }
+
+                return x;
+            }
+        }.parse();
     }
 
     public List<String> getGLCodes(final String template) {
@@ -183,3 +242,14 @@ public class MixReportXBRLResultServiceImpl implements MixReportXBRLResultServic
         return placeholders;
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-7DB1613F · 2026-09-18 · Code injection via ScriptEngine.eval
+ * Change: Replaced ScriptEngine evaluation with safe arithmetic parser validating expression structure
+ * Benefit: Prevents code injection through expression evaluation
+ * Scope: processMappingString method and new evaluateArithmeticExpression method
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
