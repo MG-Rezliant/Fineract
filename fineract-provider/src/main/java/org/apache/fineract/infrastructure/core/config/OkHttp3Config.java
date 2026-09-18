@@ -40,6 +40,7 @@ public class OkHttp3Config {
 
     private final FineractProperties fineractProperties;
 
+    // @rezliant RZ-539647D4 · 2026-09-18 — Enforces proper certificate validation for all HTTPS connections
     @Bean
     public OkHttpClient okHttpClient() throws Exception {
         var okBuilder = new OkHttpClient.Builder()//
@@ -47,29 +48,17 @@ public class OkHttp3Config {
                 .readTimeout(Duration.ofSeconds(fineractProperties.getClientReadTimeout()))//
                 .writeTimeout(Duration.ofSeconds(fineractProperties.getClientWriteTimeout())); //
 
-        if (Boolean.TRUE.equals(fineractProperties.getInsecureHttpClient())) {
-            final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-                @Override
-                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[] {};
-                }
-            };
-
-            SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
-            insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-
-            okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
-            HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
-            okBuilder.hostnameVerifier(insecureHostnameVerifier);
-        }
-
         return okBuilder.build();
     }
 }
+
+/*
+ * @rezliant-change-log:start
+ * RZ-539647D4 · 2026-09-18 · Trust-all TLS manager with weak protocol selection in configuration-enabled insecure mode
+ * Change: Removed insecure HTTP client capability including trust-all X509TrustManager, weak SSLContext getInstance("TLS"), and hostname verification bypass
+ * Benefit: Enforces proper certificate validation for all HTTPS connections
+ * Scope: okHttpClient() method
+ * 
+ * Rezliant remediation history: 1 total · 1 most recent shown
+ * @rezliant-change-log:end
+ */
