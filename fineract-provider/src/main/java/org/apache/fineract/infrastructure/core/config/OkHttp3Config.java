@@ -40,7 +40,7 @@ public class OkHttp3Config {
 
     private final FineractProperties fineractProperties;
 
-    // @rezliant RZ-59961694 · 2026-09-18 — Enforces standard certificate validation to prevent MITM attacks
+    // @rezliant RZ-73AA6F05 · 2026-09-18 — Prevents MITM attacks by enforcing platform trust validation
     @Bean
     public OkHttpClient okHttpClient() throws Exception {
         var okBuilder = new OkHttpClient.Builder()//
@@ -54,9 +54,9 @@ public class OkHttp3Config {
 
 /*
  * @rezliant-change-log:start
- * RZ-59961694 · 2026-09-18 · Configurable trust-all TLS bypass enabled
- * Change: Removed if-block and trust-all X509TrustManager, insecure SSLContext, and permissive HostnameVerifier
- * Benefit: Enforces standard certificate validation to prevent MITM attacks
+ * RZ-73AA6F05 · 2026-09-18 · Trust-all TLS manager and disabled hostname verification
+ * Change: Removed insecure trust-all X509TrustManager and permissive HostnameVerifier
+ * Benefit: Prevents MITM attacks by enforcing platform trust validation
  * Scope: okHttpClient() method
  * 
  * Rezliant remediation history: 1 total · 1 most recent shown
