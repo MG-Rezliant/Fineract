@@ -22,5 +22,15 @@ services:
   activemq:
     image: symptoma/activemq:5.18.3
     ports:
-      - "6161:6161"
-      - "61616:61616"
+      # @rezliant RZ-4F890E17 · 2026-09-18 — Prevents unauthorized remote access to message broker
+      - "127.0.0.1:6161:6161"
+      - "127.0.0.1:61616:61616"
+
+# @rezliant-change-log:start
+# RZ-4F890E17 · 2026-09-18 · ActiveMQ ports exposed on all interfaces
+# Change: Bound ports 6161 and 61616 to localhost (127.0.0.1) only
+# Benefit: Prevents unauthorized remote access to message broker
+# Scope: activemq service port mappings
+#
+# Rezliant remediation history: 1 total · 1 most recent shown
+# @rezliant-change-log:end
