@@ -18,15 +18,6 @@
  */
 package org.apache.fineract.infrastructure.hooks.processor;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,56 +35,12 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    @SuppressWarnings("unused")
-    private static final X509TrustManager insecureX509TrustManager = new X509TrustManager() {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}// NOSONAR
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[] {};
-        }
-    };
-
-    /**
-     * Configure HTTP client to be "insecure", as in skipping host SSL certificate verification. While this can be
-     * useful during development e.g. when using self-signed certificates, it should never be enabled in production (due
-     * to "man in the middle").
-     */
-    private final boolean insecureHttpClient = Boolean.getBoolean("fineract.insecureHttpClient");
-    private final SSLContext insecureSSLContext;
-
-    public ProcessorHelper() throws KeyManagementException, NoSuchAlgorithmException {
-        if (insecureHttpClient) {
-            insecureSSLContext = createInsecureSSLContext();
-        } else {
-            insecureSSLContext = null;
-        }
+    // @rezliant RZ-666B87DE · 2026-09-18 — Enforces platform certificate validation for all webhook HTTPS connections
+    public ProcessorHelper() {
     }
 
     private OkHttpClient createClient() {
-        var okBuilder = new OkHttpClient.Builder();
-        if (insecureHttpClient) {
-            configureInsecureClient(okBuilder);
-        }
-        return okBuilder.build();
-    }
-
-    private void configureInsecureClient(final OkHttpClient.Builder okBuilder) {
-        okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
-        HostnameVerifier insecureHostnameVerifier = (hostname, session) -> true;// NOSONAR
-        okBuilder.hostnameVerifier(insecureHostnameVerifier);
-    }
-
-    private SSLContext createInsecureSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext insecureSSLContext = SSLContext.getInstance("TLS"); // TODO "TLS" or "SSL" as in
-        // FineractClient.Builder?
-        insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
-        return insecureSSLContext;
+        return new OkHttpClient.Builder().build();
     }
 
     @SuppressWarnings("rawtypes")
@@ -139,3 +86,12 @@ public final class ProcessorHelper {
         };
     }
 }
+
+// @rezliant-change-log:start
+// RZ-666B87DE · 2026-09-18 · Trust-all TLS bypass capability present in production-distributable code controlled by runtime flag
+// Change: Removed insecureX509TrustManager, insecureSSLContext field, insecureHttpClient flag check, configureInsecureClient() and createInsecureSSLContext() methods
+// Benefit: Enforces platform certificate validation for all webhook HTTPS connections
+// Scope: ProcessorHelper class constructor and createClient() method
+//
+// Rezliant remediation history: 1 total · 1 most recent shown
+// @rezliant-change-log:end
