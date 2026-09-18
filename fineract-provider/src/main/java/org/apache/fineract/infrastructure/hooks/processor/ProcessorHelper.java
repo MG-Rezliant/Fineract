@@ -18,6 +18,15 @@
  */
 package org.apache.fineract.infrastructure.hooks.processor;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +44,8 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    // @rezliant RZ-A3F6EED3 · 2026-09-18 — Eliminates man-in-the-middle attack surface
+    // @rezliant RZ-0DB9DFBC · 2026-09-18 — Prevents MITM attacks by enforcing certificate validation
+
     public ProcessorHelper() {
     }
 
@@ -89,10 +99,10 @@ public final class ProcessorHelper {
 
 /*
  * @rezliant-change-log:start
- * RZ-A3F6EED3 · 2026-09-18 · Trust-all certificate bypass enabled by system property
- * Change: Removed insecureX509TrustManager, insecureHttpClient flag, insecureSSLContext field and initialization, configureInsecureClient(), and createInsecureSSLContext()
- * Benefit: Eliminates man-in-the-middle attack surface
- * Scope: ProcessorHelper constructor and createClient() method
+ * RZ-0DB9DFBC · 2026-09-18 · Trust-all TLS manager enables MITM attacks
+ * Change: Removed insecureX509TrustManager, insecureHttpClient flag, insecureSSLContext field, constructor initialization, configureInsecureClient(), and createInsecureSSLContext() methods
+ * Benefit: Enforces proper certificate validation for all webhook HTTPS connections
+ * Scope: ProcessorHelper class initialization and HTTP client creation
  * 
  * Rezliant remediation history: 1 total · 1 most recent shown
  * @rezliant-change-log:end
