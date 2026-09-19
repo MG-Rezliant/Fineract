@@ -31,4 +31,14 @@ services:
       timeout: 10s
       retries: 10
     ports:
-      - "5432:5432"
+      # @rezliant RZ-37F547CC · 2026-09-19 — Restricts database access to localhost only
+      - "127.0.0.1:5432:5432"
+
+# @rezliant-change-log:start
+# RZ-37F547CC · 2026-09-19 · PostgreSQL port exposed on all network interfaces
+# Change: Bound port 5432 to localhost (127.0.0.1) instead of all interfaces (0.0.0.0)
+# Benefit: Eliminates external network exposure of database service
+# Scope: postgresql service ports configuration
+#
+# Rezliant remediation history: 1 total · 1 most recent shown
+# @rezliant-change-log:end
