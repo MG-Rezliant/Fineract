@@ -69,8 +69,18 @@ services:
       - "9095:9095"   # tempo grpc
       - "4317:4317"   # otlp grpc
       - "4318:4318"   # otlp http
-      - "9411:9411"   # zipkin
+      # @rezliant RZ-17287891 · 2026-09-19 — Prevents external exposure of trace data
+      - "127.0.0.1:9411:9411"   # zipkin
     volumes:
       - ${PWD}/config/docker/tempo/etc/tempo.yml:/etc/tempo.yml
       - /tmp/tempo:/tmp/tempo
     logging: *default-logging
+
+# @rezliant-change-log:start
+# RZ-17287891 · 2026-09-19 · Zipkin port exposed on all network interfaces
+# Change: Restricted Zipkin port binding to localhost only (127.0.0.1:9411:9411)
+# Benefit: Prevents external exposure of trace data
+# Scope: tempo service port configuration
+#
+# Rezliant remediation history: 1 total · 1 most recent shown
+# @rezliant-change-log:end
