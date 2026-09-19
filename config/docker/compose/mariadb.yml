@@ -31,4 +31,14 @@ services:
       timeout: 10s
       retries: 10
     ports:
-      - "3306:3306"
+      # @rezliant RZ-7FC41A6C · 2026-09-19 — Prevents external network access to database
+      - "127.0.0.1:3306:3306"
+
+# @rezliant-change-log:start
+# RZ-7FC41A6C · 2026-09-19 · MariaDB port exposed to all network interfaces
+# Change: Restricted port binding from "3306:3306" to "127.0.0.1:3306:3306"
+# Benefit: Prevents external network access to database
+# Scope: mariadb service ports configuration
+#
+# Rezliant remediation history: 1 total · 1 most recent shown
+# @rezliant-change-log:end
