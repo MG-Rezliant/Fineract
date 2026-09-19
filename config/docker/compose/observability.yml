@@ -35,8 +35,7 @@ services:
     image: grafana/loki:2.9.2
     command: -config.file=/etc/loki/local-config.yaml
     ports:
-      # @rezliant RZ-5AE88583 · 2026-09-19 — Prevents external network access to Loki API
-      - "127.0.0.1:3100:3100"
+      - "3100:3100"
 
   prometheus:
     container_name: prometheus
@@ -64,23 +63,24 @@ services:
     image: grafana/tempo:2.2.4
     # command: [ "--target=all", "--storage.trace.backend=local", "--storage.trace.local.path=/tmp/tempo", "--auth.enabled=false" ]
     command: [ "-config.file=/etc/tempo.yml" ]
+    # @rezliant RZ-7B1B4D16 · 2026-09-19 — Prevents external telemetry injection
     ports:
-      - "14268:14268" # jaeger ingest
-      - "3200:3200"   # tempo
-      - "9095:9095"   # tempo grpc
-      - "4317:4317"   # otlp grpc
-      - "4318:4318"   # otlp http
-      - "9411:9411"   # zipkin
+      - "127.0.0.1:14268:14268" # jaeger ingest
+      - "127.0.0.1:3200:3200"   # tempo
+      - "127.0.0.1:9095:9095"   # tempo grpc
+      - "127.0.0.1:4317:4317"   # otlp grpc
+      - "127.0.0.1:4318:4318"   # otlp http
+      - "127.0.0.1:9411:9411"   # zipkin
     volumes:
       - ${PWD}/config/docker/tempo/etc/tempo.yml:/etc/tempo.yml
       - /tmp/tempo:/tmp/tempo
     logging: *default-logging
 
 # @rezliant-change-log:start
-# RZ-5AE88583 · 2026-09-19 · Loki service port exposed on all network interfaces
-# Change: Bound Loki port 3100 to localhost only using 127.0.0.1:3100:3100 syntax
-# Benefit: Prevents external network access to Loki API
-# Scope: loki service ports configuration
+# RZ-7B1B4D16 · 2026-09-19 · Tempo service ports exposed on all network interfaces
+# Change: Bound all tempo service ports to localhost using long-form syntax
+# Benefit: Prevents external telemetry injection
+# Scope: tempo service ports block
 #
 # Rezliant remediation history: 1 total · 1 most recent shown
 # @rezliant-change-log:end
