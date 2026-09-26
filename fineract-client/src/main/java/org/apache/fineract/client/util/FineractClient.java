@@ -489,11 +489,11 @@ public final class FineractClient {
 
 /*
  * @rezliant-change-log:start
- * RZ-7C70E905 · 2026-09-26 · Trust-all TLS bypass in client library builder
- * Change: Removed insecure() builder method that installed empty X509TrustManager
- * Benefit: Eliminates callable TLS certificate verification bypass from distributable library
- * Scope: Builder.insecure(boolean) method
- *
+ * RZ-912D47A0 · 2026-09-26 · Insecure TLS bypass permits MitM attacks
+ * Change: Removed insecure(boolean) method and trust-all TLS configuration
+ * Benefit: Enforces platform certificate validation preventing MitM attacks
+ * Scope: Builder.insecure method and related TLS bypass implementation
+ * 
  * Rezliant remediation history: 1 total · 1 most recent shown
  * @rezliant-change-log:end
  */
