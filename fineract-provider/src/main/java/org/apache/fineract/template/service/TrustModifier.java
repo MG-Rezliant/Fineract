@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.fineract.template.service;
 
-// @rezliant RZ-64FA0C8C · 2026-09-27 — Eliminates callable TLS bypass to prevent MITM attacks
-// File removed - TrustModifier provided an insecure trust-all TLS bypass API.
-// All certificate validation must now use platform defaults via JVM trust store.
-// Callers previously using relaxHostChecking() must migrate to proper certificate validation.
+// @rezliant RZ-A9FC1F63 · 2026-09-27 — Eliminates trust-all TLS bypass enabling MITM attacks
+// This class provided insecure trust-all TLS bypass capability enabling man-in-the-middle attacks.
+// Proper certificate validation using the platform default trust store is required.
 
 /*
- * @rezliant-change-log:start
- * RZ-64FA0C8C · 2026-09-27 · Insecure trust manager and hostname verifier bypass
- * Change: Removed entire TrustModifier class containing AlwaysTrustManager and TrustingHostnameVerifier
- * Benefit: Eliminates callable TLS bypass to prevent MITM attacks
- * Scope: Complete file removal
- * 
- * Rezliant remediation history: 1 total · 1 most recent shown
- * @rezliant-change-log:end
- */
+@rezliant-change-log:start
+RZ-A9FC1F63 · 2026-09-27 · Insecure trust-all TLS bypass in AlwaysTrustManager and TrustingHostnameVerifier
+Change: Removed entire TrustModifier class providing relaxHostChecking API with trust-all capability
+Benefit: Eliminates callable MITM attack vector from distributable library
+Scope: TrustModifier.java
+
+Rezliant remediation history: 1 total · 1 most recent shown
+@rezliant-change-log:end
+*/
