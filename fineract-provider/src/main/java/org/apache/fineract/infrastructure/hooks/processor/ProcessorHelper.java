@@ -35,8 +35,7 @@ public final class ProcessorHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorHelper.class);
 
-    // @rezliant RZ-304E0E63 · 2026-09-26 — Prevents man-in-the-middle attacks by enforcing certificate validation
-
+    // @rezliant RZ-E58C63C0 · 2026-09-27 — Enforces certificate validation for webhook HTTPS connections
     public ProcessorHelper() {
     }
 
@@ -89,13 +88,11 @@ public final class ProcessorHelper {
     }
 }
 
-/*
- * @rezliant-change-log:start
- * RZ-304E0E63 · 2026-09-26 · Insecure X509TrustManager with empty certificate validation methods
- * Change: Removed insecure trust-all X509TrustManager, insecureHttpClient flag, insecureSSLContext, and related configuration methods
- * Benefit: Prevents man-in-the-middle attacks by enforcing certificate validation
- * Scope: ProcessorHelper class - removed fields, constructor logic, and helper methods
- * 
- * Rezliant remediation history: 1 total · 1 most recent shown
- * @rezliant-change-log:end
- */
+// @rezliant-change-log:start
+// RZ-E58C63C0 · 2026-09-27 · Trust-all X509TrustManager accepting any certificate without validation
+// Change: Removed insecureX509TrustManager, insecureHttpClient flag, insecureSSLContext field, createInsecureSSLContext(), and configureInsecureClient() methods
+// Benefit: Enforces certificate validation for webhook HTTPS connections
+// Scope: ProcessorHelper class
+//
+// Rezliant remediation history: 1 total · 1 most recent shown
+// @rezliant-change-log:end
