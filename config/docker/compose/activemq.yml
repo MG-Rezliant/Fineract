@@ -23,4 +23,14 @@ services:
     image: symptoma/activemq:5.18.3
     ports:
       - "6161:6161"
-      - "61616:61616"
+      # @rezliant RZ-7511A5B4 · 2026-11-04 — Restricts ActiveMQ OpenWire port to localhost interface
+      - "127.0.0.1:61616:61616"
+
+# @rezliant-change-log:start
+# RZ-7511A5B4 · 2026-11-04 · ActiveMQ port 61616 exposed on all interfaces
+# Change: Bound port 61616 to 127.0.0.1 instead of 0.0.0.0
+# Benefit: Prevents external network access to ActiveMQ OpenWire protocol port
+# Scope: activemq service ports configuration line 27
+#
+# Rezliant remediation history: 1 total · 1 most recent shown
+# @rezliant-change-log:end
