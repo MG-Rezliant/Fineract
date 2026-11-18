@@ -62,7 +62,8 @@ public class OkHttp3Config {
                 }
             };
 
-            SSLContext insecureSSLContext = SSLContext.getInstance("TLS");
+            // @rezliant RZ-96C4FA74 · 2026-11-18 — Enforce TLS 1.2 minimum to prevent weak protocol negotiation
+            SSLContext insecureSSLContext = SSLContext.getInstance("TLSv1.2");
             insecureSSLContext.init(null, new TrustManager[] { insecureX509TrustManager }, new SecureRandom());
 
             okBuilder.sslSocketFactory(insecureSSLContext.getSocketFactory(), insecureX509TrustManager);
